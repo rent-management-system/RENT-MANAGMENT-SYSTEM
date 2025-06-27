@@ -1,63 +1,80 @@
-# Authentication endpoints
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.schemas import UserCreate, User, Token
-from app.crud import get_user_by_email, create_user, create_or_get_oauth_user
-from app.dependencies import create_access_token, pwd_context
 from authlib.integrations.starlette_client import OAuth
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.config import Config
+from app.database import get_db
+from app.models import User
+from app.schemas import UserCreate, User, Token
+from app.dependencies import create_access_token, pwd_context, get_current_user
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-oauth = OAuth()
+oauth = OAuth(Config(environ=os.environ))
 oauth.register(
-    name='google',
+    name="google",
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
-    authorize_params={'scope': 'openid email profile'},
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    userinfo_endpoint='https://www.googleapis.com/oauth2/v3/userinfo',
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid email profile"}
 )
 
 @router.post("/register", response_model=User)
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = get_user_by_email(db, email=user.email)
+    db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return create_user(db, user)
+    hashed_password = pwd_context.hash(user.password)
+    db_user = User(
+        email=user.email,
+        full_name=user.full_name,
+        password=hashed_password,
+        role=user.role,
+        phone_number=user.phone_number,
+        profile_picture=user.profile_picture
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = get_user_by_email(db, email=form_data.username)
-    if not user or not pwd_context.verify(form_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    user = db.query(User).filter(User.email == form_data.username).first()
+    if not user or (user.password and not pwd_context.verify(form_data.password, user.password)):
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+    if not user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/google")
-async def login_google(request: Request):
-    redirect_uri = request.url_for('auth_google_callback')
+async def google_login(request: Request):
+    redirect_uri = "http://localhost:8000/auth/google/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
-@router.get("/google/callback", name="auth_google_callback")
-async def auth_google_callback(request: Request, db: Session = Depends(get_db)):
+@router.get("/google/callback", response_model=Token)
+async def google_callback(request: Request, db: Session = Depends(get_db)):
     token = await oauth.google.authorize_access_token(request)
-    user_info = await oauth.google.parse_id_token(token)
-    email = user_info.get("email")
-    google_id = user_info.get("sub")
-    if not email or not google_id:
-        raise HTTPException(status_code=400, detail="Invalid Google token")
-    user = create_or_get_oauth_user(db, email=email, google_id=google_id)
-    access_token = create_access_token(data={"sub": user.email})
-    # Redirect to frontend with token (adjust URL as needed)
-    frontend_url = f"http://localhost:3000/login?token={access_token}"
-    return RedirectResponse(url=frontend_url)
+    user_info = token.get("userinfo")
+    if not user_info:
+        raise HTTPException(status_code=400, detail="Failed to fetch user info")
+    db_user = db.query(User).filter(User.google_id == user_info["sub"]).first()
+    if not db_user:
+        db_user = User(
+            email=user_info["email"],
+            full_name=user_info.get("name", "Unknown"),
+            google_id=user_info["sub"],
+            role="tenant"
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+    if not db_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    access_token = create_access_token(data={"sub": db_user.email})
+    return {"access_token": access_token, "token_type": "bearer"}
