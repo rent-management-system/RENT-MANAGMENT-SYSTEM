@@ -5,8 +5,8 @@ from authlib.integrations.starlette_client import OAuth
 from starlette.requests import Request
 from starlette.config import Config
 from app.database import get_db
-from app.models import User
-from app.schemas import UserCreate, User, Token
+from app.models import User  # Correct import
+from app.schemas import UserCreate, User as UserSchema, Token  # Import Pydantic schemas
 from app.dependencies import create_access_token, pwd_context, get_current_user
 import os
 from dotenv import load_dotenv
@@ -23,7 +23,7 @@ oauth.register(
     client_kwargs={"scope": "openid email profile"}
 )
 
-@router.post("/register", response_model=User)
+@router.post("/register", response_model=UserSchema)
 def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
