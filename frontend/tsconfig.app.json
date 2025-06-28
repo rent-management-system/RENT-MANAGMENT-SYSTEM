@@ -32,8 +32,19 @@
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.cache/.tsbuildinfo",
     "lib": ["ESNext", "DOM"],
-    "module": "ESNext",
-    "moduleResolution": "Node"
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "jsx": "react-jsx",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["./*"],
+      "@/components/*": ["components/*"],
+      "@/lib/*": ["lib/*"],
+      "@/pages/*": ["pages/*"],
+      "@/utils": ["utils/index.ts"]
+    }
   },
   "include": ["src/**/*", "vite.config.ts"]
 }
