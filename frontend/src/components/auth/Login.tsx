@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../utils/constants';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { API_BASE_URL } from '../../utils/constants';
+import { useToast } from '../ui/use-toast';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -17,7 +17,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
@@ -32,10 +32,11 @@ const Login: React.FC = () => {
       localStorage.setItem('token', response.data.access_token);
       toast({
         title: "Login Successful",
-        description: "Welcome back! Redirecting to dashboard...",
+        description: "Welcome back! You have successfully logged in.",
       });
       
-      setTimeout(() => navigate('/dashboard'), 1000);
+      setEmail('');
+      setPassword('');
     } catch (err) {
       console.error('Login error:', err);
       toast({
@@ -166,7 +167,10 @@ const Login: React.FC = () => {
           
           <div className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
-            <button className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
+            <button
+              onClick={() => navigate('/register')}
+              className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
+            >
               Sign up
             </button>
           </div>
