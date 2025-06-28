@@ -23,7 +23,7 @@
       "@/pages/*": ["pages/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "tailwind.config.js"],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
