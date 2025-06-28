@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../utils/constants';
-import { useToast } from '../ui/use-toast';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -15,7 +15,6 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,8 +29,7 @@ const Login: React.FC = () => {
       });
       
       localStorage.setItem('token', response.data.access_token);
-      toast({
-        title: "Login Successful",
+      toast.success("Login Successful", {
         description: "Welcome back! You have successfully logged in.",
       });
       
@@ -39,10 +37,8 @@ const Login: React.FC = () => {
       setPassword('');
     } catch (err) {
       console.error('Login error:', err);
-      toast({
-        title: "Login Failed",
+      toast.error("Login Failed", {
         description: "Please check your credentials and try again.",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

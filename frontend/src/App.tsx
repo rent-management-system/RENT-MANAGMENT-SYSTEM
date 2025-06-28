@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Toaster } from './components/ui/toaster';
+import { Toaster } from '@/components/ui/sonner';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import GoogleCallback from './components/auth/GoogleCallback';

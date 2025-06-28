@@ -26,3 +26,14 @@
 //   },
 //   "include": ["src"]
 // }
+
+{
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.cache/.tsbuildinfo",
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Node"
+  },
+  "include": ["src/**/*", "vite.config.ts"]
+}
