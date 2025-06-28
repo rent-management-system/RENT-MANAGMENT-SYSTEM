@@ -1,7 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Sonner as Toaster } from './components/ui/sonner.js';
-import Login from './components/auth/Login';
+import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register';
 import GoogleCallback from './components/auth/GoogleCallback';
 import Dashboard from './pages/Dashboard';
