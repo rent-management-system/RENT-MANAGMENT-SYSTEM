@@ -8,7 +8,9 @@ import Dashboard from './pages/Dashboard.js';
 import Properties from './pages/Properties.js';
 
 const App: React.FC = () => {
+  <div className="bg-red-500 text-white p-4">Tailwind is working!</div>
   return (
+    
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
