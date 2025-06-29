@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../utils/constants';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Upload, UserCheck } from 'lucide-react';
 
 const Register: React.FC = () => {
@@ -22,18 +23,31 @@ const Register: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size should be less than 5MB');
+        toast({
+          title: "File Too Large",
+          description: "Please select a file smaller than 5MB.",
+          variant: "destructive",
+        });
         return;
       }
+      
+      // Check file type
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        toast({
+          title: "Invalid File Type",
+          description: "Please select an image file.",
+          variant: "destructive",
+        });
         return;
       }
+      
       setProfilePicture(file);
     }
   };
@@ -42,12 +56,20 @@ const Register: React.FC = () => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match. Please try again.",
+        variant: "destructive",
+      });
       return;
     }
 
     if (password.length < 6) {
-      alert('Password must be at least 6 characters');
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -65,18 +87,39 @@ const Register: React.FC = () => {
         formData.append('profile_picture', profilePicture);
       }
 
-      await axios.post(`${API_BASE_URL}/auth/register`, formData, {
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       
-      alert('Registration successful! Please login.');
-      navigate('/login');
+      toast({
+        title: "Registration Successful",
+        description: "Your account has been created successfully!",
+      });
+      
+      // Clear form and navigate to login
+      setFirstName('');
+      setLastName('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setRole('tenant');
+      setPhoneNumber('');
+      setProfilePicture(null);
+      
+      // Navigate to login after successful registration
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err: any) {
       console.error('Registration error:', err);
-      const errorMessage = err.response?.data?.detail || "Registration failed. Please try again.";
-      alert(errorMessage);
+      const errorMessage = err.response?.data?.detail || "Please check your information and try again.";
+      toast({
+        title: "Registration Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
