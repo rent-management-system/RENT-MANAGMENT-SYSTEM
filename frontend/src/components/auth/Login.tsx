@@ -169,15 +169,19 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
-          <span 
-            onClick={() => navigate('/register')} 
-            className="font-medium text-blue-600 hover:underline cursor-pointer"
-          >
-            Sign up
-          </span>
-        </p>
+        <div className="mt-6 text-center text-sm text-gray-600">
+          <p>Don't have an account?{' '}
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/register';
+              }}
+              className="font-medium text-blue-600 hover:underline bg-transparent border-none p-0 cursor-pointer"
+            >
+              Sign up
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );

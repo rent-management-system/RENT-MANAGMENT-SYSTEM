@@ -1,11 +1,24 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import GoogleCallback from './components/auth/GoogleCallback';
 import Dashboard from './pages/Dashboard';
 import Properties from './pages/Properties';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+
+// Scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 const App: React.FC = () => {
   return (
@@ -15,6 +28,7 @@ const App: React.FC = () => {
         Tailwind is working! 🎉
       </div>
       <Router>
+        <ScrollToTop />
         <main className="container mx-auto px-4 py-8">
           <Routes>
             <Route path="/" element={
@@ -36,6 +50,7 @@ const App: React.FC = () => {
             <Route path="/google-callback" element={<GoogleCallback />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/properties" element={<Properties />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <Toaster />
         </main>
