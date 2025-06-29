@@ -1,17 +1,15 @@
-import * as React from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Sonner as Toaster } from './components/ui/sonner.js';
-//import { Login } from './components/auth/Login.js';
-import Login from './components/auth/Login.js';
-import Register from './components/auth/Register.js';
-import GoogleCallback from './components/auth/GoogleCallback.js';
-import Dashboard from './pages/Dashboard.js';
-import Properties from './pages/Properties.js';
+import { Toaster } from '@/components/ui/sonner';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import GoogleCallback from './components/auth/GoogleCallback';
+import Dashboard from './pages/Dashboard';
+import Properties from './pages/Properties';
 
 const App: React.FC = () => {
- 
   return (
-    <>
+    <div>
       <div className="bg-red-500 text-white p-4">Tailwind is working!</div>
       <Router>
         <Routes>
@@ -24,7 +22,7 @@ const App: React.FC = () => {
         </Routes>
         <Toaster />
       </Router>
-    </>
+    </div>
   );
 };
 

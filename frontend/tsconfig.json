@@ -19,10 +19,10 @@
     "paths": {
       "@/*": ["./*"],
       "@/components/*": ["components/*"],
-      "@/lib/*": ["lib/*"],
-      "@/pages/*": ["pages/*"]
+      "@/utils": ["utils"],
+      "@/utils/*": ["utils/*"]
     }
   },
- "include": ["src"],
+  "include": ["src"],
   "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
 }

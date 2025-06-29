@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../../utils/constants.js';
+import { API_BASE_URL } from '../../utils/constants';
 import { toast } from 'sonner';
-import { Button } from '../ui/button.js';
-import { Input } from '../ui/input.js';
-import { Label } from '../ui/label.js';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card.js';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -19,6 +19,7 @@ const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/login`, new URLSearchParams({
         username: email,
@@ -26,12 +27,15 @@ const Login: React.FC = () => {
       }), {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
+      
       localStorage.setItem('token', response.data.access_token);
       toast.success("Login Successful", {
         description: "Welcome back! You have successfully logged in.",
       });
+      
       setEmail('');
       setPassword('');
+      navigate('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
       toast.error("Login Failed", {
@@ -60,6 +64,7 @@ const Login: React.FC = () => {
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
+        
         <CardContent className="space-y-6">
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
@@ -79,6 +84,7 @@ const Login: React.FC = () => {
                 />
               </div>
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Password
@@ -103,6 +109,7 @@ const Login: React.FC = () => {
                 </button>
               </div>
             </div>
+            
             <Button
               type="submit"
               disabled={isLoading}
@@ -118,6 +125,7 @@ const Login: React.FC = () => {
               )}
             </Button>
           </form>
+          
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
@@ -126,6 +134,7 @@ const Login: React.FC = () => {
               <span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
             </div>
           </div>
+          
           <Button
             type="button"
             variant="outline"
@@ -152,6 +161,7 @@ const Login: React.FC = () => {
             </svg>
             <span className="text-gray-700 font-medium">Sign in with Google</span>
           </Button>
+          
           <div className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
             <button
