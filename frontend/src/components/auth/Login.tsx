@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { BrowserRouter } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
@@ -152,7 +153,6 @@ const Login: React.FC = () => {
             Don't have an account?{' '}
            <Link
   to="/register"
-  onClick={() => console.log("Navigating to register page...")}
   className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
 >
   Sign up
