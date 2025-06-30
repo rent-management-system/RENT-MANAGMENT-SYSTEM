@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { API_BASE_URL } from '../../utils/constants';
+import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,41 +13,27 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, new URLSearchParams({
-        username: email,
-        password
-      }), {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      });
-      
-      localStorage.setItem('token', response.data.access_token);
+      await login({ username: email, password });
       toast.success("Login Successful", {
         description: "Welcome back! You have successfully logged in.",
       });
-      
-      setEmail('');
-      setPassword('');
       navigate('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
       toast.error("Login Failed", {
         description: "Please check your credentials and try again.",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    window.location.href = `http://localhost:8000/auth/google`;
   };
 
   return (
@@ -167,6 +152,7 @@ const Login: React.FC = () => {
             Don't have an account?{' '}
            <Link
   to="/register"
+  onClick={() => console.log("Navigating to register page...")}
   className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
 >
   Sign up

@@ -1,10 +1,8 @@
 import React from 'react';
+import Login from '../components/auth/Login';
 
-const LoginPage: React.FC = () => (
-  <div className="p-8">
-    <h1 className="text-3xl font-bold">Properties</h1>
-    <p>List of properties will appear here.</p>
-  </div>
-);
+const LoginPage: React.FC = () => {
+  return <Login />;
+};
 
 export default LoginPage;

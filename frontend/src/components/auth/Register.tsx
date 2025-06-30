@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../../utils/constants';
-import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '../../hooks/useAuth';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,29 +20,22 @@ const Register: React.FC = () => {
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, isLoading } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File Too Large",
+        toast.error("File Too Large", {
           description: "Please select a file smaller than 5MB.",
-          variant: "destructive",
         });
         return;
       }
       
-      // Check file type
       if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid File Type",
+        toast.error("Invalid File Type", {
           description: "Please select an image file.",
-          variant: "destructive",
         });
         return;
       }
@@ -56,77 +48,47 @@ const Register: React.FC = () => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      toast({
-        title: "Password Mismatch",
+      toast.error("Password Mismatch", {
         description: "Passwords do not match. Please try again.",
-        variant: "destructive",
       });
       return;
     }
 
     if (password.length < 6) {
-      toast({
-        title: "Password Too Short",
+      toast.error("Password Too Short", {
         description: "Password must be at least 6 characters long.",
-        variant: "destructive",
       });
       return;
     }
 
-    setIsLoading(true);
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('full_name', `${firstName} ${lastName}`);
+    formData.append('password', password);
+    formData.append('role', role);
+    formData.append('phone_number', phoneNumber);
     
-    try {
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('full_name', `${firstName} ${lastName}`);
-      formData.append('password', password);
-      formData.append('role', role);
-      formData.append('phone_number', phoneNumber);
-      
-      if (profilePicture) {
-        formData.append('profile_picture', profilePicture);
-      }
+    if (profilePicture) {
+      formData.append('profile_picture', profilePicture);
+    }
 
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      toast({
-        title: "Registration Successful",
+    try {
+      await register(formData);
+      toast.success("Registration Successful", {
         description: "Your account has been created successfully!",
       });
-      
-      // Clear form and navigate to login
-      setFirstName('');
-      setLastName('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setRole('tenant');
-      setPhoneNumber('');
-      setProfilePicture(null);
-      
-      // Navigate to login after successful registration
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      navigate('/login');
     } catch (err: any) {
       console.error('Registration error:', err);
       const errorMessage = err.response?.data?.detail || "Please check your information and try again.";
-      toast({
-        title: "Registration Failed",
+      toast.error("Registration Failed", {
         description: errorMessage,
-        variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleGoogleRegister = () => {
-    window.location.href = `${API_BASE_URL}/auth/google`;
+    window.location.href = `http://localhost:8000/auth/google`;
   };
 
   return (
