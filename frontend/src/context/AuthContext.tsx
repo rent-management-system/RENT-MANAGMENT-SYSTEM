@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const { access_token } = await authService.login(credentials);
+      const access_token = await authService.login(credentials);
       const currentUser = await authService.getCurrentUser(access_token);
       setUser(currentUser);
       setToken(access_token);

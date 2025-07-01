@@ -1,12 +1,23 @@
 # Entry point for FastAPI app
 from fastapi import FastAPI
-from app.routers import auth
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import auth, users
 from app.database import Base, engine
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
 # Include routers
 app.include_router(auth.router)
+app.include_router(users.router)
