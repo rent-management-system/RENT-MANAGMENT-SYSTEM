@@ -1,5 +1,37 @@
 # Frontend Documentation: A Comprehensive Guide
 
+## Table of Contents
+
+1.  [Introduction to the Frontend](#1-introduction-to-the-frontend)
+2.  [Getting Started: Setting Up the Frontend](#2-getting-started-setting-up-the-frontend)
+3.  [Detailed Frontend Folder Structure and File Explanations](#3-detailed-frontend-folder-structure-and-file-explanations)
+    *   [File-by-File Explanation:](#file-by-file-explanation)
+4.  [Core Frontend Concepts for Beginners](#4-core-frontend-concepts-for-beginners)
+    *   [What is React?](#what-is-react)
+    *   [What is TypeScript?](#what-is-typescript)
+    *   [What is Vite?](#what-is-vite)
+    *   [What is Tailwind CSS?](#what-is-tailwind-css)
+5.  [Deep Dive into `src/` Directory](#5-deep-dive-into-src-directory)
+    *   [`src/main.tsx` (Application Entry Point)](#srcmaintsx-application-entry-point)
+    *   [`src/App.tsx` (Main Application Component & Routing)](#srcapptsx-main-application-component--routing)
+    *   [`src/assets/` (Static Assets)](#srcassets-static-assets)
+    *   [`src/components/` (Reusable UI Building Blocks)](#srccomponents-reusable-ui-building-blocks)
+        *   [`src/components/auth/` (Authentication Components)](#srccomponentsauth-authentication-components)
+        *   [`src/components/common/` (General Purpose UI Elements)](#srccomponentscommon-general-purpose-ui-elements)
+        *   [`src/components/layout/` (Application Structure Components)](#srccomponentslayout-application-structure-components)
+        *   [`src/components/ui/` (UI Library Components - likely Shadcn UI)](#srccomponentsui-ui-library-components---likely-shadcn-ui)
+    *   [`src/context/AuthContext.tsx` (Authentication State Management)](#srccontextauthcontexttsx-authentication-state-management)
+    *   [`src/hooks/` (Custom React Hooks)](#srchooks-custom-react-hooks)
+    *   [`src/lib/utils.ts` (General Utilities)](#srclibutilsts-general-utilities)
+    *   [`src/pages/` (Application Views/Pages)](#srcpages-application-viewspages)
+    *   [`src/services/` (Backend API Interaction Layer)](#srcservices-backend-api-interaction-layer)
+    *   [`src/types/` (TypeScript Type Definitions)](#srctypes-typescript-type-definitions)
+    *   [`src/utils/` (General Utility Functions and Constants)](#srcutils-general-utility-functions-and-constants)
+6.  [Frontend-Backend Integration: The Communication Flow](#6-frontend-backend-integration-the-communication-flow)
+7.  [Conclusion](#7-conclusion)
+
+---
+
 ## 1. Introduction to the Frontend
 
 Welcome to the frontend documentation for the Rent Management System! This guide is designed to help anyone, from beginners to experienced developers, understand how our user interface is built, how it works, and how it communicates with the backend API.
@@ -343,33 +375,45 @@ This directory is where all the smaller, reusable pieces of your user interface 
 
 #### `src/components/auth/` (Authentication Components)
 
-*   **`Login.tsx`**:
-    *   **Purpose**: Renders the user login form.
-    *   **Code Details**: This component manages the local state for email and password input fields. It uses the `useAuth` hook to call the `login` function when the form is submitted. It also displays toast notifications for success or failure.
-    *   **Integration**: It interacts with `useAuth` (which in turn uses `authService`) to send login credentials to the backend.
-*   **`Register.tsx`**:
-    *   **Purpose**: Renders the user registration form.
-    *   **Code Details**: Similar to `Login.tsx`, it manages form input state and uses `useAuth` to call the `register` function.
-    *   **Integration**: Sends registration data to the backend via `useAuth` and `authService`.
+*   **`GoogleCallback.d.ts`**: TypeScript declaration file for `GoogleCallback.js`.
+*   **`GoogleCallback.js`**: JavaScript version of the `GoogleCallback` component, compiled from TypeScript.
 *   **`GoogleCallback.tsx`**:
     *   **Purpose**: Handles the callback from Google after a user attempts to log in or register using Google OAuth.
     *   **Code Details**: This component typically extracts information from the URL (like authorization codes) and sends it to your backend's Google OAuth callback endpoint to complete the authentication process.
     *   **Integration**: Directly interacts with the backend's Google OAuth endpoint to exchange the authorization code for a JWT token.
+*   **`Login.d.ts`**: TypeScript declaration file for `Login.js`.
+*   **`Login.js`**: JavaScript version of the `Login` component, compiled from TypeScript.
+*   **`Login.tsx`**:
+    *   **Purpose**: Renders the user login form.
+    *   **Code Details**: This component manages the local state for email and password input fields. It uses the `useAuth` hook to call the `login` function when the form is submitted. It also displays toast notifications for success or failure.
+    *   **Integration**: It interacts with `useAuth` (which in turn uses `authService`) to send login credentials to the backend.
+*   **`Register.d.ts`**: TypeScript declaration file for `Register.js`.
+*   **`Register.js`**: JavaScript version of the `Register` component, compiled from TypeScript.
+*   **`Register.tsx`**:
+    *   **Purpose**: Renders the user registration form.
+    *   **Code Details**: Similar to `Login.tsx`, it manages form input state and uses `useAuth` to call the `register` function.
+    *   **Integration**: Sends registration data to the backend via `useAuth` and `authService`.
 
 #### `src/components/common/` (General Purpose UI Elements)
 
+*   **`Button.d.ts`**: TypeScript declaration file for `Button.js`.
+*   **`Button.js`**: JavaScript version of the `Button` component, compiled from TypeScript.
 *   **`Button.tsx`**:
     *   **Purpose**: A generic, reusable button component.
     *   **Code Details**: It likely accepts props like `onClick`, `children` (the text/content inside the button), and styling props. It might use Tailwind CSS classes for its appearance.
     *   **Integration**: Used throughout the application for various actions.
-*   **`Input.tsx`**:
-    *   **Purpose**: A generic, reusable input field component.
-    *   **Code Details**: Accepts props like `type` (text, email, password), `placeholder`, `value`, and `onChange`.
-    *   **Integration**: Used in forms across the application.
+*   **`ErrorMessage.d.ts`**: TypeScript declaration file for `ErrorMessage.js`.
+*   **`ErrorMessage.js`**: JavaScript version of the `ErrorMessage` component, compiled from TypeScript.
 *   **`ErrorMessage.tsx`**:
     *   **Purpose**: Displays error messages to the user.
     *   **Code Details**: Takes an `error` message as a prop and renders it in a visually distinct way (e.g., red text).
     *   **Integration**: Used by components like `Login.tsx` and `Register.tsx` to show API errors or validation messages.
+*   **`Input.d.ts`**: TypeScript declaration file for `Input.js`.
+*   **`Input.js`**: JavaScript version of the `Input` component, compiled from TypeScript.
+*   **`Input.tsx`**:
+    *   **Purpose**: A generic, reusable input field component.
+    *   **Code Details**: Accepts props like `type` (text, email, password), `placeholder`, `value`, and `onChange`.
+    *   **Integration**: Used in forms across the application.
 *   **`ProtectedRoute.tsx`**:
     *   **Purpose**: A special component to protect routes that require user authentication.
     *   **Code Details**: It takes an `isAllowed` prop (a boolean indicating if the user is authenticated). If `isAllowed` is `true`, it renders its child routes (`<Outlet />` from `react-router-dom`). If `false`, it redirects the user to the login page.
@@ -377,21 +421,40 @@ This directory is where all the smaller, reusable pieces of your user interface 
 
 #### `src/components/layout/` (Application Structure Components)
 
-*   **`Navbar.tsx`**:
-    *   **Purpose**: The top navigation bar of the application.
-    *   **Code Details**: Contains links to different pages (Home, Dashboard, Properties, Login/Register/Logout). It might dynamically show "Login" and "Register" when logged out, and "Dashboard" and "Logout" when logged in, using the `useAuth` hook.
-    *   **Integration**: Uses `react-router-dom` for navigation and `useAuth` for conditional rendering based on authentication status.
+*   **`Footer.d.ts`**: TypeScript declaration file for `Footer.js`.
+*   **`Footer.js`**: JavaScript version of the `Footer` component, compiled from TypeScript.
 *   **`Footer.tsx`**:
     *   **Purpose**: The bottom section of the application, typically containing copyright information or links.
     *   **Code Details**: A simple presentational component with static content.
     *   **Integration**: Included in `App.tsx` to appear on all pages.
+*   **`Navbar.d.ts`**: TypeScript declaration file for `Navbar.js`.
+*   **`Navbar.js`**: JavaScript version of the `Navbar` component, compiled from TypeScript.
+*   **`Navbar.tsx`**:
+    *   **Purpose**: The top navigation bar of the application.
+    *   **Code Details**: Contains links to different pages (Home, Dashboard, Properties, Login/Register/Logout). It might dynamically show "Login" and "Register" when logged out, and "Dashboard" and "Logout" when logged in, using the `useAuth` hook.
+    *   **Integration**: Uses `react-router-dom` for navigation and `useAuth` for conditional rendering based on authentication status.
 
 #### `src/components/ui/` (UI Library Components - likely Shadcn UI)
 
 This folder likely contains components generated or adapted from a UI library like Shadcn UI. These components are built on top of Tailwind CSS and provide accessible, pre-styled UI elements. They often come with their own `.js`, `.d.ts`, and `.tsx` files.
 
-*   **`button.tsx`, `card.tsx`, `input.tsx`, `label.tsx`, `select.tsx`**: These are highly customizable UI components that abstract away complex styling and accessibility concerns. They are built using Tailwind CSS and often integrate with Radix UI primitives for functionality.
-*   **`sonner.tsx`**: This is specifically for "Sonner" toast notifications, providing a visually appealing way to show messages to the user.
+*   **`button.d.ts`**: TypeScript declaration file for `button.js`.
+*   **`button.js`**: JavaScript version of the UI button component, compiled from TypeScript.
+*   **`button.tsx`**: TSX component for a highly customizable UI button.
+*   **`card.d.ts`**: TypeScript declaration file for `card.js`.
+*   **`card.js`**: JavaScript version of the UI card component, compiled from TypeScript.
+*   **`card.tsx`**: TSX component for a highly customizable UI card.
+*   **`input.d.ts`**: TypeScript declaration file for `input.js`.
+*   **`input.js`**: JavaScript version of the UI input component, compiled from TypeScript.
+*   **`input.tsx`**: TSX component for a highly customizable UI input.
+*   **`label.d.ts`**: TypeScript declaration file for `label.js`.
+*   **`label.js`**: JavaScript version of the UI label component, compiled from TypeScript.
+*   **`label.tsx`**: TSX component for a highly customizable UI label.
+*   **`select.d.ts`**: TypeScript declaration file for `select.tsx`.
+*   **`select.tsx`**: TSX component for a highly customizable UI select dropdown.
+*   **`sonner.d.ts`**: TypeScript declaration file for `sonner.js`.
+*   **`sonner.js`**: JavaScript version of the Sonner toast notification component, compiled from TypeScript.
+*   **`sonner.tsx`**: TSX component for displaying "toast" notifications (small, temporary pop-up messages) to the user.
 
 ### `src/context/AuthContext.tsx` (Authentication State Management)
 
@@ -517,6 +580,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 Custom hooks are JavaScript functions that let you use React features (like state and lifecycle methods) in functional components. They promote code reuse and make complex logic easier to manage.
 
+*   **`useAuth.d.ts`**: TypeScript declaration file for `useAuth.js`.
+*   **`useAuth.js`**: JavaScript version of the `useAuth` hook, compiled from TypeScript.
 *   **`useAuth.ts`**:
     ```typescript
     // src/hooks/useAuth.ts
@@ -534,18 +599,25 @@ Custom hooks are JavaScript functions that let you use React features (like stat
     ```
     *   **Purpose**: Provides a convenient way for any component to access the authentication state and functions from `AuthContext` without directly importing `AuthContext` everywhere.
     *   **How it works**: It uses React's built-in `useContext` hook to read the value provided by the nearest `AuthContext.Provider`. It also includes a check to ensure it's used within an `AuthProvider` to prevent errors.
+*   **`useApi.d.ts`**: TypeScript declaration file for `useApi.js`.
+*   **`useApi.js`**: JavaScript version of the `useApi` hook, compiled from TypeScript.
 *   **`useApi.ts`**:
     *   **Purpose**: A custom hook for making authenticated API requests. It likely wraps `axios` and automatically includes the JWT token in the request headers.
     *   **Code Details**: It would get the `token` from `useAuth` and then configure an `axios` instance to include that token in the `Authorization` header for every request made through this hook.
     *   **Integration**: Components that need to fetch data from protected backend endpoints would use `useApi` instead of directly using `axios`.
+*   **`use-toast.d.ts`**: TypeScript declaration file for `use-toast.js`.
+*   **`use-toast.js`**: JavaScript version of the `use-toast` hook, compiled from TypeScript.
 *   **`use-toast.ts`**:
     *   **Purpose**: A custom hook to easily trigger and manage toast notifications (pop-up messages).
     *   **Code Details**: It provides a function (e.g., `toast.success()`, `toast.error()`) that components can call to display messages. It integrates with the `sonner` UI component.
 
 ### `src/lib/utils.ts` (General Utilities)
 
-*   **Purpose**: Contains small, general-purpose utility functions that can be used across different parts of the application.
-*   **Code Details**: For a Tailwind CSS project, this file often includes a `cn` function (from `clsx` and `tailwind-merge`) to conditionally combine Tailwind classes.
+*   **`utils.d.ts`**: TypeScript declaration file for `utils.js`.
+*   **`utils.js`**: JavaScript version of the utility functions, compiled from TypeScript.
+*   **`utils.ts`**:
+    *   **Purpose**: Contains small, general-purpose utility functions that can be used across different parts of the application.
+    *   **Code Details**: For a Tailwind CSS project, this file often includes a `cn` function (from `clsx` and `tailwind-merge`) to conditionally combine Tailwind classes.
     ```typescript
     // src/lib/utils.ts (Example)
     import { type ClassValue, clsx } from "clsx"
@@ -561,16 +633,28 @@ Custom hooks are JavaScript functions that let you use React features (like stat
 
 These components represent the main "screens" or "views" of your application. They often compose smaller components from `src/components/`.
 
-*   **`Home.tsx`**: The landing page of the application.
-*   **`LoginPage.tsx`**: Renders the `Login` component from `src/components/auth/`.
-*   **`RegisterPage.tsx`**: Renders the `Register` component from `src/components/auth/`.
+*   **`Dashboard.d.ts`**: TypeScript declaration file for `Dashboard.js`.
+*   **`Dashboard.js`**: JavaScript version of the Dashboard page, compiled from TypeScript.
 *   **`Dashboard.tsx`**: The main dashboard for logged-in users. This page would typically fetch user-specific data from the backend using `useApi`.
+*   **`Home.d.ts`**: TypeScript declaration file for `Home.js`.
+*   **`Home.js`**: JavaScript version of the Home page, compiled from TypeScript.
+*   **`Home.tsx`**: The landing page of the application.
+*   **`LoginPage.d.ts`**: TypeScript declaration file for `LoginPage.js`.
+*   **`LoginPage.js`**: JavaScript version of the Login page, compiled from TypeScript.
+*   **`LoginPage.tsx`**: Renders the `Login` component from `src/components/auth/`.
+*   **`Properties.d.ts`**: TypeScript declaration file for `Properties.js`.
+*   **`Properties.js`**: JavaScript version of the Properties page, compiled from TypeScript.
 *   **`Properties.tsx`**: A page to display a list of properties, likely fetching data from a backend `/properties` endpoint.
+*   **`RegisterPage.d.ts`**: TypeScript declaration file for `RegisterPage.js`.
+*   **`RegisterPage.js`**: JavaScript version of the Register page, compiled from TypeScript.
+*   **`RegisterPage.tsx`**: Renders the `Register` component from `src/components/auth/`.
 
 ### `src/services/` (Backend API Interaction Layer)
 
 This directory is crucial for how your frontend talks to your backend. It abstracts away the details of making HTTP requests.
 
+*   **`api.d.ts`**: TypeScript declaration file for `api.js`.
+*   **`api.js`**: JavaScript version of the API service, compiled from TypeScript.
 *   **`api.ts`**:
     ```typescript
     // src/services/api.ts
@@ -588,6 +672,8 @@ This directory is crucial for how your frontend talks to your backend. It abstra
     ```
     *   **Purpose**: Configures the `axios` HTTP client. It sets the base URL for all API requests, so you don't have to type `http://localhost:8000` every time. It also sets a default `Content-Type` header for JSON requests.
     *   **Integration**: This `api` instance is imported and used by other services (like `authService`) to make requests.
+*   **`authService.d.ts`**: TypeScript declaration file for `authService.js`.
+*   **`authService.js`**: JavaScript version of the authentication service, compiled from TypeScript.
 *   **`authService.ts`**:
     ```typescript
     // src/services/authService.ts
@@ -655,6 +741,8 @@ This directory is crucial for how your frontend talks to your backend. It abstra
 
 This directory is crucial for TypeScript projects. It defines the "shapes" of your data, ensuring consistency and helping prevent errors.
 
+*   **`auth.d.ts`**: TypeScript declaration file for `auth.js`.
+*   **`auth.js`**: JavaScript version of the authentication types, compiled from TypeScript.
 *   **`auth.ts`**:
     ```typescript
     // src/types/auth.ts
@@ -688,11 +776,15 @@ This directory is crucial for TypeScript projects. It defines the "shapes" of yo
     ```
     *   **Purpose**: Defines the data structures for users, login credentials, registration information, and API tokens.
     *   **Why it's important**: When you pass data around your application or send it to the backend, TypeScript checks if the data matches these defined interfaces. This prevents common bugs like typos in property names or sending the wrong type of data.
+*   **`property.d.ts`**: TypeScript declaration file for `property.js`.
+*   **`property.js`**: JavaScript version of the property types, compiled from TypeScript.
 *   **`property.ts`**:
     *   **Purpose**: Defines the data structure for property objects (e.g., `Property` interface with fields like `id`, `address`, `rent`, `landlord_id`).
 
 ### `src/utils/` (General Utility Functions and Constants)
 
+*   **`constants.d.ts`**: TypeScript declaration file for `constants.js`.
+*   **`constants.js`**: JavaScript version of the constants, compiled from TypeScript.
 *   **`constants.ts`**:
     ```typescript
     // src/utils/constants.ts
@@ -700,8 +792,13 @@ This directory is crucial for TypeScript projects. It defines the "shapes" of yo
     // Other constants like API keys, default values, etc.
     ```
     *   **Purpose**: Stores important, unchanging values (constants) that are used throughout the application, like the backend API URL. This makes it easy to change these values in one place if needed.
+*   **`helpers.d.ts`**: TypeScript declaration file for `helpers.js`.
+*   **`helpers.js`**: JavaScript version of the helper functions, compiled from TypeScript.
 *   **`helpers.ts`**:
     *   **Purpose**: Contains small, pure functions that perform specific tasks and don't depend on or modify the application's state. Examples might include date formatting, string manipulation, or validation helpers.
+*   **`index.d.ts`**: TypeScript declaration file for `index.js`.
+*   **`index.js`**: JavaScript version of the utility index, compiled from TypeScript.
+*   **`index.ts`**: Likely re-exports from `constants.ts` and `helpers.ts` for easier imports.
 
 ---
 
