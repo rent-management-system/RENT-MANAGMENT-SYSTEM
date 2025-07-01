@@ -1,5 +1,5 @@
 import { jsx as _jsx } from "react/jsx-runtime";
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
 export const AuthContext = createContext(undefined);
 export const AuthProvider = ({ children }) => {
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(true);
         setError(null);
         try {
-            const { access_token } = await authService.login(credentials);
+            const access_token = await authService.login(credentials);
             const currentUser = await authService.getCurrentUser(access_token);
             setUser(currentUser);
             setToken(access_token);

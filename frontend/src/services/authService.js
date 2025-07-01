@@ -4,7 +4,7 @@ class AuthService {
     login = async (credentials) => {
         const response = await api.post('/auth/login', credentials);
         localStorage.setItem('token', response.data.access_token);
-        return response.data;
+        return response.data.access_token;
     };
     register = async (userInfo) => {
         const response = await api.post('/auth/register', userInfo);

@@ -1,6 +1,6 @@
-import React, { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import type { User, LoginCredentials, RegisterInfo } from '../types/auth';
-interface AuthContextType {
+export interface AuthContextType {
     user: User | null;
     token: string | null;
     login: (credentials: LoginCredentials) => Promise<void>;
