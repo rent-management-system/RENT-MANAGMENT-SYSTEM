@@ -1,21 +1,26 @@
 // import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 // import { clsx } from 'clsx'; // Import clsx
-export {};
+
 // interface Toast {
 //   id: string;
 //   title: string;
 //   description?: string;
 //   variant?: 'default' | 'destructive' | 'success';
 // }
+
 // interface ToastContextType {
 //   toast: (options: Omit<Toast, 'id'>) => void;
 // }
+
 // const ToastContext = createContext<ToastContextType | undefined>(undefined);
+
 // interface ToastProviderProps {
 //   children: ReactNode;
 // }
+
 // export function ToastProvider({ children }: ToastProviderProps) {
 //   const [toasts, setToasts] = useState<Toast[]>([]);
+
 //   const toast = useCallback(({ title, description, variant = 'default' }: Omit<Toast, 'id'>) => {
 //     const id = Math.random().toString(36).substring(2, 9);
 //     setToasts((prev) => [
@@ -26,6 +31,7 @@ export {};
 //       setToasts((prev) => prev.filter((t) => t.id !== id));
 //     }, 4000);
 //   }, []);
+
 //   return (
 //     <ToastContext.Provider value={{ toast }}>
 //       {children}
@@ -48,6 +54,7 @@ export {};
 //     </ToastContext.Provider>
 //   );
 // }
+
 // export function useToast() {
 //   const context = useContext(ToastContext);
 //   if (context === undefined) {

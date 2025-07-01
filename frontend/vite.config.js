@@ -1,26 +1,25 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import tailwindcss from '@tailwindcss/postcss7-compat';
-import autoprefixer from 'autoprefixer';
-
 export default defineConfig({
-  plugins: [react()],
-  css: {
-    postcss: {
-      plugins: [
-        tailwindcss,
-        autoprefixer,
-      ],
+    plugins: [react()],
+    server: {
+        port: 3000,
+        open: true,
+        hmr: {
+            overlay: false
+        },
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, ''),
+            },
+        },
     },
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
-  },
-  server: {
-    port: 3000,
-    open: true,
-  },
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, './src'),
+        }
+    }
 });

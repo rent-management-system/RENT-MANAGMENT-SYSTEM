@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, EyeOff, Mail, Lock, User, Phone, Upload, UserCheck } from 'lucide-react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Eye, EyeOff, Mail, Lock, User, Phone, UserCheck } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [firstName, setFirstName] = useState('');
@@ -17,32 +17,10 @@ const Register: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('tenant');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register, isLoading } = useAuth();
+  const { register, isLoading, error } = useAuth();
   const navigate = useNavigate();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("File Too Large", {
-          description: "Please select a file smaller than 5MB.",
-        });
-        return;
-      }
-      
-      if (!file.type.startsWith('image/')) {
-        toast.error("Invalid File Type", {
-          description: "Please select an image file.",
-        });
-        return;
-      }
-      
-      setProfilePicture(file);
-    }
-  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,28 +39,24 @@ const Register: React.FC = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('full_name', `${firstName} ${lastName}`);
-    formData.append('password', password);
-    formData.append('role', role);
-    formData.append('phone_number', phoneNumber);
-    
-    if (profilePicture) {
-      formData.append('profile_picture', profilePicture);
-    }
+    const full_name = `${firstName} ${lastName}`;
 
     try {
-      await register(formData);
+      await register({
+        full_name,
+        email,
+        password,
+        phone_number: phoneNumber,
+        role,
+      });
       toast.success("Registration Successful", {
         description: "Your account has been created successfully!",
       });
       navigate('/login');
     } catch (err: any) {
       console.error('Registration error:', err);
-      const errorMessage = err.response?.data?.detail || "Please check your information and try again.";
       toast.error("Registration Failed", {
-        description: errorMessage,
+        description: error || "Please check your information and try again.",
       });
     }
   };
@@ -245,31 +219,10 @@ const Register: React.FC = () => {
                   type="tel"
                   placeholder="Enter your phone number"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhoneNumber(e.target.value)}
                   className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                 />
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="profilePicture" className="text-sm font-medium text-gray-700">
-                Profile Picture
-              </Label>
-              <div className="relative">
-                <Upload className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="profilePicture"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
-              </div>
-              {profilePicture && (
-                <p className="text-sm text-gray-600 mt-1">
-                  Selected: {profilePicture.name}
-                </p>
-              )}
             </div>
             
             <Button

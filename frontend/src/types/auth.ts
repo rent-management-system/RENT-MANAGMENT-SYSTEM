@@ -6,3 +6,16 @@ export interface User {
   phone_number: string;
   profile_picture: string;
 }
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterInfo {
+  full_name: string;
+  email: string;
+  password: string;
+  phone_number: string;
+  role: string;
+}
