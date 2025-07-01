@@ -27,3 +27,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+class LoginCredentials(BaseModel):
+    email: EmailStr
+    password: str

@@ -6,7 +6,7 @@ from starlette.requests import Request
 from starlette.config import Config
 from app.database import get_db
 from app.models import User  # Correct import
-from app.schemas import UserCreate, User as UserSchema, Token  # Import Pydantic schemas
+from app.schemas import UserCreate, User as UserSchema, Token, LoginCredentials  # Import Pydantic schemas
 from app.dependencies import create_access_token, pwd_context, get_current_user
 import os
 from dotenv import load_dotenv
@@ -43,9 +43,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return db_user
 
 @router.post("/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or (user.password and not pwd_context.verify(form_data.password, user.password)):
+def login(credentials: LoginCredentials, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == credentials.email).first()
+    if not user or (user.password and not pwd_context.verify(credentials.password, user.password)):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")

@@ -12,3 +12,6 @@ psycopg2-binary
 email-validator
 passlib[bcrypt]
 authlib
+httpx
+email-validator
+python-multipart
