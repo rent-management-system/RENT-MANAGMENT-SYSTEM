@@ -1,5 +1,28 @@
 # Backend API Documentation: A Comprehensive Guide
 
+## Table of Contents
+
+1.  [Introduction](#1-introduction)
+2.  [Project Setup and Running the Backend](#2-project-setup-and-running-the-backend)
+3.  [Detailed Backend Folder Structure and File Explanations](#3-detailed-backend-folder-structure-and-file-explanations)
+    *   [File-by-File Explanation:](#file-by-file-explanation)
+        *   [`.env`](#env)
+        *   [`app/main.py`](#appmainpy)
+        *   [`app/database.py`](#appdatabasepy)
+        *   [`app/models.py`](#appmodelspy)
+        *   [`app/schemas.py`](#appschemaspy)
+        *   [`app/dependencies.py`](#appdependenciespy)
+        *   [`app/crud.py`](#appcrudpy)
+        *   [`app/routers/auth.py`](#approutersauthpy)
+        *   [`app/routers/users.py`](#approutersuserspy)
+        *   [`app/routers/properties.py`](#approuterspropertiespy)
+        *   [`tests/test_main.py`](#teststest_mainpy)
+4.  [Backend-Frontend Integration: How They Talk](#4-backend-frontend-integration-how-they-talk)
+5.  [Future Enhancements (Planned/Potential)](#5-future-enhancements-plannedpotential)
+6.  [Conclusion](#6-conclusion)
+
+---
+
 ## 1. Introduction
 
 Welcome to the backend documentation for the Rent Management System. This document provides a comprehensive overview of the API, its architecture, and how to work with it. It is designed to be easily understood by developers of all levels, from beginners to experienced programmers.
@@ -231,7 +254,7 @@ backend/
 
         # User: Schema for returning user data (excludes password, includes ID, etc.).
         # Config.from_attributes = True is for SQLAlchemy compatibility.
-        class User(UserBase):
+        class User(Base):
             id: int
             is_active: bool
             created_at: datetime
