@@ -1,29 +1,12 @@
-import React, { createContext, useState, useEffect, type ReactNode } from 'react';
-import type { User, LoginCredentials, RegisterInfo } from '../types/auth';
+import { jsx as _jsx } from 'react/jsx-runtime';
+import React, { createContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
-
-export interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  register: (userInfo: RegisterInfo) => Promise<void>;
-  logout: () => void;
-  isLoading: boolean;
-  error: string | null;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
+export const AuthContext = createContext(undefined);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   useEffect(() => {
     const initAuth = async () => {
       const storedToken = authService.getToken();
@@ -44,8 +27,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
     initAuth();
   }, []);
-
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (credentials) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -53,7 +35,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const currentUser = await authService.getCurrentUser(access_token);
       setUser(currentUser);
       setToken(access_token);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login failed:', err);
       setError(err.message || 'Login failed. Please check your credentials.');
       throw err; // Re-throw to allow components to handle it
@@ -61,13 +43,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-
-  const register = async (userInfo: RegisterInfo) => {
+  const register = async (userInfo) => {
     setIsLoading(true);
     setError(null);
     try {
       await authService.register(userInfo);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Registration failed:', err);
       setError(err.message || 'Registration failed. Please try again.');
       throw err; // Re-throw to allow components to handle it
@@ -75,7 +56,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-
   const logout = () => {
     setIsLoading(true);
     setError(null);
@@ -83,17 +63,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authService.logout();
       setUser(null);
       setToken(null);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Logout failed:', err);
       setError(err.message || 'Logout failed.');
     } finally {
       setIsLoading(false);
     }
   };
-
-  return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading, error }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return _jsx(AuthContext.Provider, {
+    value: { user, token, login, register, logout, isLoading, error },
+    children: children,
+  });
 };

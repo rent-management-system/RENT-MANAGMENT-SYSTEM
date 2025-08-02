@@ -1,30 +1,13 @@
 import { useState, useCallback } from 'react';
-import axios, {
-  type AxiosRequestConfig,
-  type AxiosResponse,
-  AxiosError,
-} from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useAuth } from './useAuth';
-
-interface UseApiResult<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  request: (
-    config: AxiosRequestConfig,
-  ) => Promise<AxiosResponse<T> | undefined>;
-}
-
-const useApi = <T = any>(): UseApiResult<T> => {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+const useApi = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const { token, logout } = useAuth();
-
   const request = useCallback(
-    async (
-      config: AxiosRequestConfig,
-    ): Promise<AxiosResponse<T> | undefined> => {
+    async (config) => {
       setLoading(true);
       setError(null);
       try {
@@ -36,7 +19,7 @@ const useApi = <T = any>(): UseApiResult<T> => {
         setData(response.data);
         return response;
       } catch (err) {
-        const axiosError = err as AxiosError<{ message?: string }>;
+        const axiosError = err;
         if (axiosError.response) {
           if (axiosError.response.status === 401) {
             logout();
@@ -56,8 +39,6 @@ const useApi = <T = any>(): UseApiResult<T> => {
     },
     [token, logout],
   );
-
   return { data, loading, error, request };
 };
-
 export default useApi;
