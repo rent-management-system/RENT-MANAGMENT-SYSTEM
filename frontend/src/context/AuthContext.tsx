@@ -1,77 +1,131 @@
-import { jsx as _jsx } from 'react/jsx-runtime';
-import React, { createContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useReducer,
+  useEffect,
+  useMemo,
+  type ReactNode,
+} from 'react';
+import { User, LoginCredentials, RegisterInfo } from '../types/auth';
 import authService from '../services/authService';
-export const AuthContext = createContext(undefined);
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+import { jwtDecode } from 'jwt-decode';
+
+interface AuthState {
+  user: User | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+type AuthAction =
+  | { type: 'LOGIN_START' }
+  | { type: 'LOGIN_SUCCESS'; payload: User }
+  | { type: 'LOGIN_FAILURE'; payload: string }
+  | { type: 'REGISTER_FAILURE'; payload: string }
+  | { type: 'LOGOUT' }
+  | { type: 'INITIALIZE'; payload: User | null };
+
+export interface AuthContextType extends AuthState {
+  login: (credentials: LoginCredentials) => Promise<User>;
+  register: (userInfo: RegisterInfo) => Promise<void>;
+  logout: () => void;
+}
+
+const initialState: AuthState = {
+  user: null,
+  isLoading: true,
+  error: null,
+};
+
+const authReducer = (state: AuthState, action: AuthAction): AuthState => {
+  switch (action.type) {
+    case 'LOGIN_START':
+      return { ...state, isLoading: true, error: null };
+    case 'LOGIN_SUCCESS':
+      return { ...state, isLoading: false, user: action.payload, error: null };
+    case 'LOGIN_FAILURE':
+    case 'REGISTER_FAILURE':
+      return { ...state, isLoading: false, error: action.payload, user: null };
+    case 'LOGOUT':
+      return { ...state, user: null, error: null };
+    case 'INITIALIZE':
+      return { ...state, user: action.payload, isLoading: false };
+    default:
+      return state;
+  }
+};
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const [state, dispatch] = useReducer(authReducer, initialState);
+
   useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = authService.getToken();
-      if (storedToken) {
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
         try {
-          const currentUser = await authService.getCurrentUser(storedToken);
-          setUser(currentUser);
-          setToken(storedToken);
-        } catch (err) {
-          console.error('Failed to fetch user from token:', err);
-          authService.logout();
-          setUser(null);
-          setToken(null);
-          setError('Session expired or invalid. Please log in again.');
+          // Ensure token is not expired
+          const decoded: { exp: number } = jwtDecode(token);
+          if (decoded.exp * 1000 < Date.now()) {
+            localStorage.removeItem('token');
+            dispatch({ type: 'INITIALIZE', payload: null });
+            return;
+          }
+          
+          const user = await authService.getCurrentUser();
+          dispatch({ type: 'INITIALIZE', payload: user });
+        } catch (error) {
+          localStorage.removeItem('token');
+          dispatch({ type: 'INITIALIZE', payload: null });
         }
+      } else {
+        dispatch({ type: 'INITIALIZE', payload: null });
       }
-      setIsLoading(false);
     };
-    initAuth();
+    initializeAuth();
   }, []);
-  const login = async (credentials) => {
-    setIsLoading(true);
-    setError(null);
+
+  const login = async (credentials: LoginCredentials) => {
+    dispatch({ type: 'LOGIN_START' });
     try {
-      const access_token = await authService.login(credentials);
-      const currentUser = await authService.getCurrentUser(access_token);
-      setUser(currentUser);
-      setToken(access_token);
-    } catch (err) {
-      console.error('Login failed:', err);
-      setError(err.message || 'Login failed. Please check your credentials.');
-      throw err; // Re-throw to allow components to handle it
-    } finally {
-      setIsLoading(false);
+      const { user, token } = await authService.login(credentials);
+      localStorage.setItem('token', token);
+      dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+      return user;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.detail || 'Login failed. Please check your credentials.';
+      dispatch({ type: 'LOGIN_FAILURE', payload: errorMessage });
+      throw new Error(errorMessage);
     }
   };
-  const register = async (userInfo) => {
-    setIsLoading(true);
-    setError(null);
+
+  const register = async (userInfo: RegisterInfo) => {
     try {
       await authService.register(userInfo);
-    } catch (err) {
-      console.error('Registration failed:', err);
-      setError(err.message || 'Registration failed. Please try again.');
-      throw err; // Re-throw to allow components to handle it
-    } finally {
-      setIsLoading(false);
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.detail || 'Registration failed. Please try again.';
+      dispatch({ type: 'REGISTER_FAILURE', payload: errorMessage });
+      throw new Error(errorMessage);
     }
   };
+
   const logout = () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      authService.logout();
-      setUser(null);
-      setToken(null);
-    } catch (err) {
-      console.error('Logout failed:', err);
-      setError(err.message || 'Logout failed.');
-    } finally {
-      setIsLoading(false);
-    }
+    localStorage.removeItem('token');
+    dispatch({ type: 'LOGOUT' });
   };
-  return _jsx(AuthContext.Provider, {
-    value: { user, token, login, register, logout, isLoading, error },
-    children: children,
-  });
+
+  const value = useMemo(
+    () => ({
+      ...state,
+      login,
+      register,
+      logout,
+    }),
+    [state],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

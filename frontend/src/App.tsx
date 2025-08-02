@@ -10,39 +10,38 @@ import Home from './pages/Home';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
-const App = () => {
-  return _jsx(Router, {
-    children: _jsx(AuthProvider, {
-      children: _jsxs('div', {
-        className: 'flex flex-col min-h-screen bg-gray-50',
-        children: [
-          _jsx(Navbar, {}),
-          _jsx('main', {
-            className: 'flex-grow container mx-auto px-4 py-8',
-            children: _jsxs(Routes, {
-              children: [
-                _jsx(Route, { path: '/', element: _jsx(Home, {}) }),
-                _jsx(Route, { path: '/login', element: _jsx(LoginPage, {}) }),
-                _jsx(Route, {
-                  path: '/register',
-                  element: _jsx(RegisterPage, {}),
-                }),
-                _jsx(Route, {
-                  path: '/dashboard',
-                  element: _jsx(Dashboard, {}),
-                }),
-                _jsx(Route, {
-                  path: '/properties',
-                  element: _jsx(Properties, {}),
-                }),
-              ],
-            }),
-          }),
-          _jsx(Footer, {}),
-          _jsx(Toaster, {}),
-        ],
-      }),
-    }),
-  });
+import ProtectedRoute from './components/router/ProtectedRoute';
+import GuestRoute from './components/router/GuestRoute';
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <AuthProvider>
+        <div className="flex flex-col min-h-screen bg-gray-50">
+          <Navbar />
+          <main className="flex-grow container mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={<Home />} />
+
+              {/* Guest Routes */}
+              <Route element={<GuestRoute />}>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+              </Route>
+
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/properties" element={<Properties />} />
+              </Route>
+            </Routes>
+          </main>
+          <Footer />
+          <Toaster />
+        </div>
+      </AuthProvider>
+    </Router>
+  );
 };
+
 export default App;
