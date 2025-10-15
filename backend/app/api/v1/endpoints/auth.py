@@ -7,18 +7,16 @@ from starlette.config import Config
 from app.database import get_db
 from app.models import User  # Correct import
 from app.schemas import UserCreate, User as UserSchema, Token, LoginCredentials  # Import Pydantic schemas
-from app.dependencies import create_access_token, pwd_context, get_current_user
-import os
-from dotenv import load_dotenv
+from app.core.security import create_access_token, get_password_hash, verify_password
+from app.api.v1.deps import get_current_user
 
-load_dotenv()
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter()
 oauth = OAuth(Config(environ=os.environ))
 oauth.register(
     name="google",
     client_id=os.getenv("GOOGLE_CLIENT_ID"),
-    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    client_secret=settings.GOOGLE_CLIENT_SECRET,
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
     client_kwargs={"scope": "openid email profile"}
 )
@@ -28,7 +26,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.email == user.email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    hashed_password = pwd_context.hash(user.password)
+    hashed_password = get_password_hash(user.password)
     db_user = User(
         email=user.email,
         full_name=user.full_name,
@@ -45,7 +43,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 @router.post("/login", response_model=Token)
 def login(credentials: LoginCredentials, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == credentials.email).first()
-    if not user or (user.password and not pwd_context.verify(credentials.password, user.password)):
+    if not user or (user.password and not verify_password(credentials.password, user.password)):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
