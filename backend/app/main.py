@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
+
 from app.routers import auth, users
 from app.db.base import Base
 from app.db.session import engine
@@ -23,6 +23,4 @@ app.add_middleware(
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
-# Include routers
-app.include_router(auth.router)
-app.include_router(users.router)
+app.include_router(api_router, prefix="/api/v1")
