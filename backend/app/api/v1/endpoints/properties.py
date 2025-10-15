@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.models import Property as PropertyModel, User, UserRole
 from app.schemas import PropertyCreate, Property
-from app.dependencies import get_db, require_role
+from app.db.session import get_db
+from app.api.v1.deps import require_role
 
-router = APIRouter(prefix="/properties", tags=["properties"])
+router = APIRouter()
 
 @router.post("/", response_model=Property)
 def create_property(
