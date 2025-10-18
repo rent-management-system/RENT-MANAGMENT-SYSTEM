@@ -13,10 +13,15 @@ class Settings(BaseSettings):
     # Default Admin
     DEFAULT_ADMIN_EMAIL: str
     DEFAULT_ADMIN_PASSWORD: str
+    DEFAULT_ADMIN_EMAIL_2: str | None = None # Optional second admin email
+    DEFAULT_ADMIN_PASSWORD_2: str | None = None # Optional second admin password
 
     # Google OAuth
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
+
+    # AES Encryption
+    AES_SECRET_KEY: str
 
     class Config:
         env_file = ".env"

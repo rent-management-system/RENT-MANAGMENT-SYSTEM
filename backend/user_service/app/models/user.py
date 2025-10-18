@@ -1,7 +1,15 @@
 import enum
 import uuid
 from datetime import datetime
-from sqlalchemy import (Column, String, Boolean, DateTime, Enum as SAEnum, LargeBinary)
+from sqlalchemy import (
+    Column, 
+    String, 
+    Boolean, 
+    DateTime, 
+    Enum as SAEnum, 
+    LargeBinary, 
+    Index
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -37,3 +45,9 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     password_changed = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+
+    __table_args__ = (
+        Index('idx_user_id', id),
+        Index('idx_user_email', email),
+        Index('idx_user_role', role),
+    )

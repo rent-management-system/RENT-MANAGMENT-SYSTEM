@@ -1,10 +1,12 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.security import decode_token
+from app.core.security import decode_token, decrypt_data
 from app.db.session import get_db
 from app.models.user import User, UserRole
-from app.schemas.token import TokenData
+from app.schemas.token import UserTokenData
+from app.crud import get_user
+from typing import List
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
@@ -18,18 +20,21 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     if payload is None:
         raise credentials_exception
     
-    email = payload.get("email")
-    if email is None:
+    user_id = payload.get("sub")
+    if user_id is None:
         raise credentials_exception
 
-    user = await db.get(User, payload.get("sub"))
+    user = await get_user(db, user_id) # Use crud function to get user and decrypt phone_number
     if user is None:
         raise credentials_exception
+    
+    # Ensure the user object returned has all necessary fields for downstream use
+    # The crud.get_user already decrypts phone_number
     return user
 
-def require_role(required_role: UserRole):
+def require_role(required_roles: List[UserRole]):
     async def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role != required_role:
+        if current_user.role not in required_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="The user does not have enough privileges",

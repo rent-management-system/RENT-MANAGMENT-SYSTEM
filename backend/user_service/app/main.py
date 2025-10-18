@@ -23,6 +23,7 @@ async def health_check():
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 from .db.seed import seed_admin
 from .db.session import get_db
 

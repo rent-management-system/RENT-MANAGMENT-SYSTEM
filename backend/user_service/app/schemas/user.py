@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 import uuid
 from app.models.user import UserRole, Language, Currency
@@ -10,13 +10,13 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
     role: UserRole = UserRole.TENANT
-    phone_number: Optional[str] = None
+    phone_number: Optional[str] = Field(None, regex=r"^\+251[79]\d{8}$")
     preferred_language: Language = Language.EN
     preferred_currency: Currency = Currency.ETB
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
-    phone_number: Optional[str] = None
+    phone_number: Optional[str] = Field(None, regex=r"^\+251[79]\d{8}$")
     preferred_language: Optional[Language] = None
     preferred_currency: Optional[Currency] = None
 
@@ -24,6 +24,7 @@ class UserInDBBase(UserBase):
     id: uuid.UUID
     role: UserRole
     is_active: bool
+    password_changed: bool # Added password_changed
 
     class Config:
         from_attributes = True

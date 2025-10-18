@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies.auth import get_current_user
-from ..schemas.token import Token, RefreshToken
+from ..schemas.token import Token, RefreshToken, UserTokenData
 from ..schemas.user import ChangePassword, User
 from ..core.security import create_access_token, create_refresh_token, verify_password, get_password_hash, decode_token
 from ..db.session import get_db
 from ..crud import get_user_by_email, get_user
+from ..models.user import UserRole
 
 router = APIRouter()
 
@@ -22,14 +23,28 @@ async def login(db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordReq
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
 
-    access_token = create_access_token(data={"sub": str(user.id), "role": user.role.value, "email": user.email})
+    # Check if password needs to be changed for pre-seeded admins
+    if user.role == UserRole.ADMIN and not user.password_changed:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Please change your password on first login."
+        )
+
+    access_token_data = {
+        "sub": str(user.id),
+        "role": user.role.value,
+        "email": user.email,
+        "phone_number": user.phone_number, # Already decrypted by crud.get_user_by_email
+        "preferred_language": user.preferred_language.value
+    }
+    access_token = create_access_token(data=access_token_data)
     refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 @router.post("/refresh", response_model=Token)
-async def refresh(db: AsyncSession = Depends(get_db), refresh_token: RefreshToken = Depends()):
-    payload = decode_token(refresh_token.refresh_token)
+async def refresh(db: AsyncSession = Depends(get_db), refresh_token_obj: RefreshToken = Depends()):
+    payload = decode_token(refresh_token_obj.refresh_token)
     if not payload:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token")
     
@@ -38,7 +53,14 @@ async def refresh(db: AsyncSession = Depends(get_db), refresh_token: RefreshToke
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
-    access_token = create_access_token(data={"sub": str(user.id), "role": user.role.value, "email": user.email})
+    access_token_data = {
+        "sub": str(user.id),
+        "role": user.role.value,
+        "email": user.email,
+        "phone_number": user.phone_number, # Already decrypted by crud.get_user
+        "preferred_language": user.preferred_language.value
+    }
+    access_token = create_access_token(data=access_token_data)
     new_refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
     return {"access_token": access_token, "refresh_token": new_refresh_token, "token_type": "bearer"}
@@ -50,10 +72,18 @@ async def change_password(db: AsyncSession = Depends(get_db), passwords: ChangeP
     
     current_user.password = get_password_hash(passwords.new_password)
     current_user.password_changed = True
+    db.add(current_user)
     await db.commit()
+    await db.refresh(current_user)
 
     return {"message": "Password changed successfully"}
 
-@router.get("/verify")
+@router.get("/verify", response_model=UserTokenData)
 async def verify_token(current_user: User = Depends(get_current_user)):
-    return current_user
+    return UserTokenData(
+        user_id=current_user.id,
+        role=current_user.role,
+        email=current_user.email,
+        phone_number=current_user.phone_number, # Already decrypted
+        preferred_language=current_user.preferred_language
+    )

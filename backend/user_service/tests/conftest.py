@@ -1,42 +1,39 @@
 import pytest
-from typing import AsyncGenerator
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
+
 from app.main import app
+from app.db.base import Base
 from app.db.session import get_db
-from app.models.user import Base, User, UserRole
-from app.core.security import get_password_hash
+from app.core.config import settings
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
-
-engine = create_async_engine(TEST_DATABASE_URL, echo=True)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
-
-async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with TestingSessionLocal() as session:
-        yield session
-
-app.dependency_overrides[get_db] = override_get_db
+# Use a separate test database
+TEST_DATABASE_URL = settings.DATABASE_URL.replace("rent_db", "test_rent_db")
 
 @pytest.fixture(scope="session")
-async def client() -> AsyncGenerator[AsyncClient, None]:
+async def test_engine():
+    engine = create_async_engine(TEST_DATABASE_URL, echo=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
-    # Seed an admin user
-    async with TestingSessionLocal() as session:
-        admin_user = User(
-            email="admin_test@example.com",
-            password=get_password_hash("adminpassword"),
-            full_name="Admin Test User",
-            role=UserRole.ADMIN,
-        )
-        session.add(admin_user)
-        await session.commit()
-
-    async with AsyncClient(app=app, base_url="http://test") as c:
-        yield c
-
+    yield engine
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+@pytest.fixture(scope="function")
+async def test_db(test_engine):
+    async_session = sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False)
+    async with async_session() as session:
+        yield session
+        # Clean up data after each test
+        for table in reversed(Base.metadata.sorted_tables):
+            await session.execute(table.delete())
+        await session.commit()
+
+@pytest.fixture(scope="function")
+async def client(test_db):
+    app.dependency_overrides[get_db] = lambda: test_db
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+    app.dependency_overrides.clear()

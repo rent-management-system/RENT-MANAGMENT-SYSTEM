@@ -5,15 +5,31 @@ from app.schemas.user import UserCreate
 from app.models.user import UserRole
 
 async def seed_admin(db: AsyncSession):
-    admin_email = settings.DEFAULT_ADMIN_EMAIL
-    admin_password = settings.DEFAULT_ADMIN_PASSWORD
+    admin_users_to_seed = [
+        {
+            "email": settings.DEFAULT_ADMIN_EMAIL,
+            "password": settings.DEFAULT_ADMIN_PASSWORD,
+            "full_name": "Admin User 1",
+        }
+    ]
 
-    user = await get_user_by_email(db, email=admin_email)
-    if not user:
-        admin_user = UserCreate(
-            email=admin_email,
-            password=admin_password,
-            full_name="Admin User",
-            role=UserRole.ADMIN,
+    if settings.DEFAULT_ADMIN_EMAIL_2 and settings.DEFAULT_ADMIN_PASSWORD_2:
+        admin_users_to_seed.append(
+            {
+                "email": settings.DEFAULT_ADMIN_EMAIL_2,
+                "password": settings.DEFAULT_ADMIN_PASSWORD_2,
+                "full_name": "Admin User 2",
+            }
         )
-        await create_user(db, user=admin_user)
+
+    for admin_data in admin_users_to_seed:
+        user = await get_user_by_email(db, email=admin_data["email"])
+        if not user:
+            admin_user_create = UserCreate(
+                email=admin_data["email"],
+                password=admin_data["password"],
+                full_name=admin_data["full_name"],
+                role=UserRole.ADMIN,
+            )
+            # Set password_changed to False for pre-seeded admins
+            await create_user(db, user=admin_user_create, password_changed=False)
