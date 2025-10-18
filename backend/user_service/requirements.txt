@@ -6,6 +6,8 @@ pydantic-settings
 passlib[bcrypt]
 python-jose[cryptography]
 cryptography
+apscheduler
+psycopg2-binary
 
 alembic
 pytest

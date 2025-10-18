@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # AES Encryption
     AES_SECRET_KEY: str
 
+    # Cleanup Job
+    CLEANUP_SCHEDULE_HOUR: int = 0 # Midnight EAT (UTC+3)
+
     class Config:
         env_file = ".env"
 
