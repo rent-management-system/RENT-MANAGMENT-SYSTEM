@@ -8,8 +8,8 @@ from sqlalchemy import (
     DateTime, 
     Enum as SAEnum, 
     LargeBinary, 
-    Index
-)
+    Index, 
+    ForeignKey)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -60,8 +60,4 @@ class RefreshToken(Base):
         Index('idx_refresh_token_user_id', user_id),
     )
 
-    __table_args__ = (
-        Index('idx_user_id', id),
-        Index('idx_user_email', email),
-        Index('idx_user_role', role),
-    )
+    
