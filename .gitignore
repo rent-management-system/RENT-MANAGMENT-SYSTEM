@@ -1,5 +1,6 @@
 # Environments
 .env
+backend/user_service/.env
 .env*.local
 .env.example
 

@@ -19,6 +19,6 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str
 
     class Config:
-        env_file = ".env"
+        env_file = "backend/user_service/.env"
 
 settings = Settings()
