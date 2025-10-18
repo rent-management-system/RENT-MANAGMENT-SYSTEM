@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.dependencies.auth import get_current_user
-from app.schemas.user import User, UserCreate, UserUpdate
-from app.db.session import get_db
-from app.crud import create_user, get_user_by_email
+from ..dependencies.auth import get_current_user
+from ..schemas.user import User, UserCreate, UserUpdate
+from ..db.session import get_db
+from ..crud import create_user, get_user_by_email
 
 router = APIRouter()
 
@@ -25,7 +25,7 @@ async def update_user_me(user_in: UserUpdate, db: AsyncSession = Depends(get_db)
     if user_in.phone_number:
         # In a real app, you'd want to handle phone number updates carefully
         # e.g., re-verification
-        from app.core.security import encrypt_data
+        from ..core.security import encrypt_data
         current_user.phone_number = encrypt_data(user_in.phone_number)
     if user_in.preferred_language:
         current_user.preferred_language = user_in.preferred_language
