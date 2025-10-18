@@ -20,7 +20,7 @@ async def cleanup_expired_refresh_tokens():
         try:
             # Calculate the expiration threshold (7 days ago from now in EAT)
             # Convert current UTC time to EAT, then subtract 7 days
-            now_utc = datetime.utcnow().replace(tzinfo=pytz.utc)
+            now_utc = datetime.now(pytz.utc)
             now_eat = now_utc.astimezone(EAT)
             expiration_threshold = now_eat - timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 

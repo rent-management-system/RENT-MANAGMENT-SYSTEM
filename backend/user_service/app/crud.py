@@ -1,10 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.models.user import User
+from sqlalchemy import delete
+from app.models.user import User, RefreshToken
 from app.schemas.user import UserCreate
 from app.core.security import get_password_hash, encrypt_data, decrypt_data
 from app.utils.retry import async_retry
 import uuid
+from datetime import datetime
 
 @async_retry()
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
@@ -50,3 +52,25 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
         if user.phone_number:
             user.phone_number = decrypt_data(user.phone_number)
     return users
+
+@async_retry()
+async def create_refresh_token_db(db: AsyncSession, user_id: uuid.UUID, token: str, expires_at: datetime) -> RefreshToken:
+    db_refresh_token = RefreshToken(
+        user_id=user_id,
+        token=token,
+        expires_at=expires_at
+    )
+    db.add(db_refresh_token)
+    await db.commit()
+    await db.refresh(db_refresh_token)
+    return db_refresh_token
+
+@async_retry()
+async def get_refresh_token_by_token(db: AsyncSession, token: str) -> RefreshToken | None:
+    result = await db.execute(select(RefreshToken).filter(RefreshToken.token == token))
+    return result.scalars().first()
+
+@async_retry()
+async def delete_refresh_token(db: AsyncSession, refresh_token_id: uuid.UUID):
+    await db.execute(delete(RefreshToken).where(RefreshToken.id == refresh_token_id))
+    await db.commit()

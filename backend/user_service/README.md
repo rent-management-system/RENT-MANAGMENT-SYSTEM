@@ -15,6 +15,7 @@ This microservice handles user authentication, authorization, and profile manage
 -   **Multilingual Support:** For English, Amharic, and Afaan Oromo.
 -   **Phone Number Encryption:** `phone_number` is stored encrypted using AES-256.
 -   **Database Retry Logic:** Implemented for robustness against transient database issues.
+-   **Refresh Token Cleanup:** A scheduled job runs daily to remove expired refresh tokens from the database, ensuring maintainability and preventing bloat.
 
 ## Technologies Used
 
@@ -26,6 +27,7 @@ This microservice handles user authentication, authorization, and profile manage
 -   `passlib[bcrypt]` (Password Hashing)
 -   `python-jose[cryptography]` (JWT)
 -   `cryptography` (AES Encryption)
+-   `apscheduler` (for cron-like jobs)
 -   `asyncio-retry` (for database retries)
 
 ## Setup Instructions
@@ -64,24 +66,25 @@ This microservice handles user authentication, authorization, and profile manage
     GOOGLE_CLIENT_ID="your_google_client_id"
     GOOGLE_CLIENT_SECRET="your_google_client_secret"
     AES_SECRET_KEY="your_aes_secret_key_here_generate_a_new_one"
+    CLEANUP_SCHEDULE_HOUR=0 # Hour in UTC (0 for midnight EAT, which is UTC+3)
     ```
     **Important:** Replace placeholders with your actual values. For `AES_SECRET_KEY`, generate one using `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`. 
 
 5.  **Run Database Migrations:**
-    Ensure your PostgreSQL database is running and accessible via the `DATABASE_URL`. The `migrate.sh` script (or Alembic commands) should be used to apply migrations and create tables. The `seed_admin` function will automatically pre-seed admin users on application startup if they don't exist.
+    Ensure your PostgreSQL database is running and accessible via the `DATABASE_URL`. The `migrate.sh` script (or Alembic commands) should be used to apply migrations and create tables. The `seed_admin` function will automatically pre-seed admin users on application startup if they don't exist. You will also need to ensure the `refresh_tokens` table is created.
     ```bash
     # Assuming you have Alembic configured and migrate.sh runs it
     chmod +x migrate.sh
     ./migrate.sh
     ```
-    Alternatively, you can manually apply the schema from `backend/user_service/sql/schema.sql` if Alembic is not fully set up yet.
+    Alternatively, you can manually apply the schemas from `backend/user_service/sql/schema.sql` and `backend/user_service/sql/refresh_tokens.sql` if Alembic is not fully set up yet.
 
 ## Running the Application
 
 To start the FastAPI application:
 
 ```bash
-./Bate/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+./Bate/bin/uvicorn backend.user_service.app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 The API documentation will be available at `http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc` (ReDoc).
@@ -99,12 +102,12 @@ To run the unit and integration tests:
 ### Authentication Endpoints (`/api/v1/auth`)
 
 -   **`POST /api/v1/auth/login`**
-    -   **Description:** Authenticates a user with email and password. Returns Access and Refresh Tokens with user claims. Requires password change for pre-seeded admins on first login.
+    -   **Description:** Authenticates a user with email and password. Returns Access and Refresh Tokens with user claims. Requires password change for pre-seeded admins on first login. Stores hashed refresh token in DB.
     -   **Parameters:** `username` (email), `password` (form data).
     -   **Returns:** Access and Refresh Tokens.
 
 -   **`POST /api/v1/auth/refresh`**
-    -   **Description:** Refreshes an expired access token using a refresh token.
+    -   **Description:** Refreshes an expired access token using a refresh token. Validates against DB, deletes old token, creates and stores new token.
     -   **Parameters:** `refresh_token` (body).
     -   **Returns:** New Access and Refresh Tokens.
 
@@ -171,7 +174,6 @@ Other microservices (e.g., Payment Processing) can use the `/api/v1/auth/verify`
 
 ## Future Enhancements
 
--   **Refresh Token Cleanup:** Implement a cron-like job to periodically clean up expired refresh tokens from the database.
 -   **Google OAuth Callback:** Fully implement the Google OAuth callback logic within the microservice.
 -   **Rate Limiting:** Integrate with an API Gateway (e.g., AWS API Gateway) for rate limiting to prevent abuse.
 -   **Logging:** Implement structured logging (e.g., `structlog`) to CloudWatch for better observability and security auditing.

@@ -46,6 +46,20 @@ class User(Base):
     password_changed = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
 
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    token = Column(String, nullable=False) # Hashed refresh token
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (
+        Index('idx_refresh_token_expires_at', expires_at),
+        Index('idx_refresh_token_user_id', user_id),
+    )
+
     __table_args__ = (
         Index('idx_user_id', id),
         Index('idx_user_email', email),
