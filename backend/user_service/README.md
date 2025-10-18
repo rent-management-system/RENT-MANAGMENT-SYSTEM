@@ -81,7 +81,7 @@ This microservice handles user authentication, authorization, and profile manage
 To start the FastAPI application:
 
 ```bash
-./Bate/bin/uvicorn backend.user_service.app.main:app --host 0.0.0.0 --port 8000 --reload
+./Bate/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 The API documentation will be available at `http://localhost:8000/docs` (Swagger UI) and `http://localhost:8000/redoc` (ReDoc).

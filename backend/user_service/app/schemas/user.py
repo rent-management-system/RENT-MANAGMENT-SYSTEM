@@ -10,13 +10,13 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
     role: UserRole = UserRole.TENANT
-    phone_number: Optional[str] = Field(None, regex=r"^\+251[79]\d{8}$")
+    phone_number: Optional[str] = Field(None, pattern=r"^\+251[79]\d{8}$")
     preferred_language: Language = Language.EN
     preferred_currency: Currency = Currency.ETB
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
-    phone_number: Optional[str] = Field(None, regex=r"^\+251[79]\d{8}$")
+    phone_number: Optional[str] = Field(None, pattern=r"^\+251[79]\d{8}$")
     preferred_language: Optional[Language] = None
     preferred_currency: Optional[Currency] = None
 

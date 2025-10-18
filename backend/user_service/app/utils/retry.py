@@ -1,7 +1,7 @@
 import asyncio
 from functools import wraps
 
-async def async_retry(tries=3, delay=1, backoff=2):
+def async_retry(tries=3, delay=1, backoff=2):
     def deco(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
