@@ -1,16 +1,10 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.routers import auth, users
+from app.api.v1.api import api_router
 from app.db.base import Base
 from app.db.session import engine
 
 app = FastAPI()
-
-
-
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Create database tables
+# This will create the database tables
 Base.metadata.create_all(bind=engine)
 
 app.include_router(api_router, prefix="/api/v1")
