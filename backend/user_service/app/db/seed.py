@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.config import settings
-from app.crud import get_user_by_email, create_user
-from app.schemas.user import UserCreate
-from app.models.user import UserRole
+from ..core.config import settings
+from ..crud import get_user_by_email, create_user
+from ..schemas.user import UserCreate
+from ..models.user import UserRole
 
 async def seed_admin(db: AsyncSession):
     admin_users_to_seed = [

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 import uuid
-from app.models.user import UserRole, Language, Currency
+from ..models.user import UserRole, Language, Currency
 
 class UserBase(BaseModel):
     email: EmailStr

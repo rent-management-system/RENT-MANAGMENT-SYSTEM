@@ -27,6 +27,6 @@ class Settings(BaseSettings):
     CLEANUP_SCHEDULE_HOUR: int = 0 # Midnight EAT (UTC+3)
 
     class Config:
-        env_file = ".env"
+        env_file = "/home/dagi/Desktop/flash files one documentes and desktop /Rent-managment-system/backend/user_service/.env"
 
 settings = Settings()

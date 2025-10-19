@@ -5,10 +5,10 @@ import pytz
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
-from app.db.session import get_db
-from app.models.user import RefreshToken
-from app.utils.retry import async_retry
+from ..core.config import settings
+from ..db.session import get_db
+from ..models.user import RefreshToken
+from .retry import async_retry
 
 # Define the EAT timezone
 EAT = pytz.timezone('Africa/Addis_Ababa')

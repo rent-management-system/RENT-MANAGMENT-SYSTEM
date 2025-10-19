@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
-from app.models.user import User, RefreshToken
-from app.schemas.user import UserCreate
-from app.core.security import get_password_hash, encrypt_data, decrypt_data
-from app.utils.retry import async_retry
+from .models.user import User, RefreshToken
+from .schemas.user import UserCreate
+from .core.security import get_password_hash, encrypt_data, decrypt_data
+from .utils.retry import async_retry
 import uuid
 from datetime import datetime
 

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 import uuid
-from app.models.user import UserRole, Language
+from ..models.user import UserRole, Language
 
 class Token(BaseModel):
     access_token: str

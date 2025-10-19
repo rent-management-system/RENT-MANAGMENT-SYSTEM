@@ -8,8 +8,7 @@
 # Install dependencies
 ./Bate/bin/pip install -r backend/user_service/requirements.txt
 
-# Downgrade to base to reset the database
-./Bate/bin/alembic -c backend/user_service/alembic.ini downgrade base
+
 
 # Upgrade to the latest revision
 ./Bate/bin/alembic -c backend/user_service/alembic.ini upgrade head
