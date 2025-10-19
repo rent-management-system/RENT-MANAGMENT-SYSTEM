@@ -12,15 +12,13 @@ from datetime import datetime
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     result = await db.execute(select(User).filter(User.email == email))
     user = result.scalars().first()
-    if user and user.phone_number:
-        user.phone_number = decrypt_data(user.phone_number) # Decrypt for use
+
     return user
 
 @async_retry()
 async def get_user(db: AsyncSession, user_id: uuid.UUID) -> User | None:
     user = await db.get(User, user_id)
-    if user and user.phone_number:
-        user.phone_number = decrypt_data(user.phone_number) # Decrypt for use
+
     return user
 
 @async_retry()
@@ -40,9 +38,7 @@ async def create_user(db: AsyncSession, user: UserCreate, password_changed: bool
     db.add(db_user)
     await db.commit()
     await db.refresh(db_user)
-    # Decrypt phone number before returning
-    if db_user.phone_number:
-        db_user.phone_number = decrypt_data(db_user.phone_number)
+    
     return db_user
 
 async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):

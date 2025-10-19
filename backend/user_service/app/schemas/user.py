@@ -1,7 +1,8 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field, model_validator
+from typing import Optional, Self
 import uuid
 from ..models.user import UserRole, Language, Currency
+from ..core.security import decrypt_data
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -30,7 +31,13 @@ class UserInDBBase(UserBase):
         from_attributes = True
 
 class User(UserInDBBase):
-    pass
+    phone_number: Optional[str] = None # Explicitly define phone_number as str
+
+    @model_validator(mode='after')
+    def decrypt_phone_number(self) -> Self:
+        if isinstance(self.phone_number, bytes):
+            self.phone_number = decrypt_data(self.phone_number)
+        return self
 
 class UserInDB(UserInDBBase):
     password: Optional[str] = None

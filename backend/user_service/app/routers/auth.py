@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies.auth import get_current_user
 from ..schemas.token import Token, RefreshToken, UserTokenData
 from ..schemas.user import ChangePassword, User
-from ..core.security import create_access_token, create_refresh_token, verify_password, get_password_hash, decode_token
+from ..core.security import create_access_token, create_refresh_token, verify_password, get_password_hash, decode_token, decrypt_data
 from ..db.session import get_db
 from ..crud import get_user_by_email, get_user, create_refresh_token_db, get_refresh_token_by_token, delete_refresh_token
 from ..models.user import UserRole
@@ -32,11 +32,16 @@ async def login(db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordReq
             detail="Please change your password on first login."
         )
 
+    # Decrypt phone number for JWT payload
+    decrypted_phone_number = None
+    if user.phone_number:
+        decrypted_phone_number = decrypt_data(user.phone_number)
+
     access_token_data = {
         "sub": str(user.id),
         "role": user.role.value,
         "email": user.email,
-        "phone_number": user.phone_number, # Already decrypted by crud.get_user_by_email
+        "phone_number": decrypted_phone_number, # Use the decrypted phone number
         "preferred_language": user.preferred_language.value
     }
     access_token = create_access_token(data=access_token_data)
@@ -70,11 +75,16 @@ async def refresh(db: AsyncSession = Depends(get_db), refresh_token_obj: Refresh
     # Delete the old refresh token from the database
     await delete_refresh_token(db, db_refresh_token.id)
 
+    # Decrypt phone number for JWT payload
+    decrypted_phone_number = None
+    if user.phone_number:
+        decrypted_phone_number = decrypt_data(user.phone_number)
+
     access_token_data = {
         "sub": str(user.id),
         "role": user.role.value,
         "email": user.email,
-        "phone_number": user.phone_number, # Already decrypted by crud.get_user
+        "phone_number": decrypted_phone_number, # Use the decrypted phone number
         "preferred_language": user.preferred_language.value
     }
     access_token = create_access_token(data=access_token_data)
@@ -102,10 +112,14 @@ async def change_password(db: AsyncSession = Depends(get_db), passwords: ChangeP
 
 @router.get("/verify", response_model=UserTokenData)
 async def verify_token(current_user: User = Depends(get_current_user)):
+    decrypted_phone_number = None
+    if current_user.phone_number:
+        decrypted_phone_number = decrypt_data(current_user.phone_number)
+
     return UserTokenData(
         user_id=current_user.id,
         role=current_user.role,
         email=current_user.email,
-        phone_number=current_user.phone_number, # Already decrypted
+        phone_number=decrypted_phone_number, # Use decrypted phone number
         preferred_language=current_user.preferred_language
     )
