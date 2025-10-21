@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../ui/card';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -18,21 +24,40 @@ const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await login({ email, password });
-      toast.success("Login Successful", {
-        description: "Welcome back! You have successfully logged in.",
+      const loggedInUser = await login({ email, password });
+      toast.success('Login Successful', {
+        description: 'Welcome back! You have successfully logged in.',
       });
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Login error:', err);
-      toast.error("Login Failed", {
-        description: error || "Please check your credentials and try again.",
+      if (loggedInUser && loggedInUser.user) {
+        switch (loggedInUser.user.role) {
+          case 'tenant':
+            navigate('/tenant-dashboard'); // Assuming a tenant-specific dashboard
+            break;
+          case 'owner':
+            navigate('/owner-dashboard'); // Assuming an owner-specific dashboard
+            break;
+          case 'admin':
+            navigate('/admin-dashboard'); // Assuming an admin-specific dashboard
+            break;
+          case 'broker':
+            navigate('/broker-dashboard'); // Assuming a broker-specific dashboard
+            break;
+          default:
+            navigate('/dashboard'); // Default dashboard for other roles or if role is not explicitly handled
+            break;
+        }
+      } else {
+        navigate('/dashboard'); // Fallback if user object is not available for some reason
+      }
+    } catch (err: any) {
+      toast.error('Login Failed', {
+        description: err.message || 'Please check your credentials and try again.',
       });
     }
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = `http://localhost:8000/auth/google`;
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
   };
 
   return (
@@ -49,11 +74,15 @@ const Login: React.FC = () => {
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-6">
+          {error && <div className="text-red-500 text-center">{error}</div>}
           <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium text-gray-700"
+              >
                 Email Address
               </Label>
               <div className="relative">
@@ -63,25 +92,30 @@ const Login: React.FC = () => {
                   type="email"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                   className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                   required
                 />
               </div>
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="password"
+                className="text-sm font-medium text-gray-700"
+              >
                 Password
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setPassword(e.target.value)
+                  }
                   className="pl-10 pr-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                   required
                 />
@@ -90,11 +124,15 @@ const Login: React.FC = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
-            
+
             <Button
               type="submit"
               disabled={isLoading}
@@ -110,16 +148,18 @@ const Login: React.FC = () => {
               )}
             </Button>
           </form>
-          
+
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
+              <span className="px-4 bg-white text-gray-500 font-medium">
+                Or continue with
+              </span>
             </div>
           </div>
-          
+
           <Button
             type="button"
             variant="outline"
@@ -144,17 +184,19 @@ const Login: React.FC = () => {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span className="text-gray-700 font-medium">Sign in with Google</span>
+            <span className="text-gray-700 font-medium">
+              Sign in with Google
+            </span>
           </Button>
-          
+
           <div className="text-center text-sm text-gray-600">
             Don't have an account?{' '}
-           <Link
-  to="/register"
-  className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
->
-  Sign up
-</Link>
+            <Link
+              to="/register"
+              className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
+            >
+              Sign up
+            </Link>
           </div>
         </CardContent>
       </Card>

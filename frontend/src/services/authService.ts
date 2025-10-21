@@ -1,32 +1,31 @@
 import api from './api';
-import { type LoginCredentials, type RegisterInfo, type User } from '../types/auth';
+import { LoginCredentials, RegisterInfo, User } from '../types/auth';
+
+interface LoginResponse {
+  access_token: string;
+  token_type: string;
+}
 
 class AuthService {
-  login = async (credentials: LoginCredentials) => {
-    const response = await api.post('/auth/login', credentials);
-    localStorage.setItem('token', response.data.access_token);
-    return response.data.access_token;
-  };
+  async login(credentials: LoginCredentials): Promise<{ user: User; token: string }> {
+    const response = await api.post<LoginResponse>('/auth/login', credentials);
+    const token = response.data.access_token;
+    
+    // After getting the token, get user data
+    const user = await this.getCurrentUser(token);
+    return { user, token };
+  }
 
-  register = async (userInfo: RegisterInfo) => {
-    const response = await api.post('/auth/register', userInfo);
+  async register(userInfo: RegisterInfo): Promise<User> {
+    const response = await api.post<User>('/auth/register', userInfo);
     return response.data;
-  };
+  }
 
-  getCurrentUser = async (token: string): Promise<User> => {
-    const response = await api.get('/users/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  async getCurrentUser(token?: string): Promise<User> {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await api.get<User>('/users/me', { headers });
     return response.data;
-  };
-
-  getToken = (): string | null => {
-    return localStorage.getItem('token');
-  };
-
-  logout = (): void => {
-    localStorage.removeItem('token');
-  };
+  }
 }
 
 export default new AuthService();
