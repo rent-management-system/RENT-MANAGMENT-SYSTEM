@@ -25,13 +25,6 @@ async def login(db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordReq
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
 
-    # Check if password needs to be changed for pre-seeded admins
-    if user.role == UserRole.ADMIN and not user.password_changed:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Please change your password on first login."
-        )
-
     # Decrypt phone number for JWT payload
     decrypted_phone_number = None
     if user.phone_number:
@@ -42,7 +35,8 @@ async def login(db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordReq
         "role": user.role.value,
         "email": user.email,
         "phone_number": decrypted_phone_number, # Use the decrypted phone number
-        "preferred_language": user.preferred_language.value
+        "preferred_language": user.preferred_language.value,
+        "password_changed": user.password_changed # Include password_changed status
     }
     access_token = create_access_token(data=access_token_data)
     
@@ -85,7 +79,8 @@ async def refresh(db: AsyncSession = Depends(get_db), refresh_token_obj: Refresh
         "role": user.role.value,
         "email": user.email,
         "phone_number": decrypted_phone_number, # Use the decrypted phone number
-        "preferred_language": user.preferred_language.value
+        "preferred_language": user.preferred_language.value,
+        "password_changed": user.password_changed # Include password_changed status
     }
     access_token = create_access_token(data=access_token_data)
     
@@ -121,5 +116,6 @@ async def verify_token(current_user: User = Depends(get_current_user)):
         role=current_user.role,
         email=current_user.email,
         phone_number=decrypted_phone_number, # Use decrypted phone number
-        preferred_language=current_user.preferred_language
+        preferred_language=current_user.preferred_language,
+        password_changed=current_user.password_changed
     )

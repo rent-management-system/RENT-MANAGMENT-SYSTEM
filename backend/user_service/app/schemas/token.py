@@ -17,3 +17,4 @@ class UserTokenData(BaseModel):
     email: EmailStr
     phone_number: Optional[str] = None
     preferred_language: Language
+    password_changed: bool
