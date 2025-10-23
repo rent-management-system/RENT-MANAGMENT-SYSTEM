@@ -1,9 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any, Union
-
 from jose import jwt
 from passlib.context import CryptContext
-
 from ..core.config import settings
 from cryptography.fernet import Fernet
 import base64
@@ -28,6 +26,24 @@ def decrypt_data(encrypted_data: bytes) -> str:
     f = get_fernet()
     return f.decrypt(encrypted_data).decode()
 
+
+def _truncate_password_to_safe_str(password: str) -> str:
+    """
+    Truncate the UTF-8 *bytes* representation of password to 72 bytes (bcrypt limit),
+    then decode back to a str safely ignoring any partial multi-byte sequences.
+
+    This guarantees the input passed to passlib is a `str` and <= 72 bytes when encoded.
+    """
+    if password is None:
+        raise ValueError("password must be provided")
+    if not isinstance(password, str):
+        password = str(password)
+
+    pw_bytes = password.encode('utf-8')[:72]
+    safe_pw = pw_bytes.decode('utf-8', 'ignore')
+    return safe_pw
+
+
 def create_access_token(
     data: dict,
     expires_delta: timedelta = None
@@ -40,6 +56,7 @@ def create_access_token(
     to_encode.update({"exp": expire, "iat": datetime.utcnow()})
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
+
 
 def create_refresh_token(
     data: dict,
@@ -54,11 +71,23 @@ def create_refresh_token(
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
 
+
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password.encode('utf-8')[:72], hashed_password)
+    """
+    Verify the provided plain password against the stored hash.
+    We truncate by bytes first (bcrypt limit) and pass a `str` to passlib.
+    """
+    safe_pw = _truncate_password_to_safe_str(plain_password)
+    return pwd_context.verify(safe_pw, hashed_password)
+
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password.encode('utf-8')[:72])
+    """
+    Hash the password after truncating to 72 bytes and decoding to str.
+    """
+    safe_pw = _truncate_password_to_safe_str(password)
+    return pwd_context.hash(safe_pw)
+
 
 def decode_token(token: str) -> Union[dict, None]:
     try:
