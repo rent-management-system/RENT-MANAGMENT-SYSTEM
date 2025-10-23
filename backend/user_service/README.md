@@ -34,7 +34,7 @@ This microservice handles user authentication, authorization, and profile manage
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository_url>
+    git clone https://github.com/rent-management-system/RENT-MANAGMENT-SYSTEM
     cd Rent-managment-system
     ```
 
