@@ -61,7 +61,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict this to specific domains
+    allow_origins=[
+        "http://localhost:5174",  # your Vite dev frontend
+        "https://rent-managment-system-user-magt.onrender.com",  # production frontend (if same domain serves UI)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
