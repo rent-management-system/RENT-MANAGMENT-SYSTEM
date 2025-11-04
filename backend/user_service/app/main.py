@@ -62,8 +62,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5174",  # your Vite dev frontend
-        "https://rent-managment-system-user-magt.onrender.com",  # production frontend (if same domain serves UI)
+        "http://localhost:5173/",  # your Vite dev frontend
+        "https://rental-user-management-frontend.vercel.app/",  # production frontend (if same domain serves UI)
     ],
     allow_credentials=True,
     allow_methods=["*"],
