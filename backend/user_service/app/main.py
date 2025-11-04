@@ -13,7 +13,7 @@ from .core.config import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Seed admin user
-    async for db in get_db():
+    async with get_db() as db:
         await seed_admin(db)
         break  # only need first session
 
