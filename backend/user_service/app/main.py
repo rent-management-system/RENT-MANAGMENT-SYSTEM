@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
     # Seed admin user
     async with get_db() as db:
         await seed_admin(db)
-        break  # only need first session
+        
 
     # Setup scheduler in EAT timezone
     eat_timezone = pytz.timezone('Africa/Addis_Ababa')
