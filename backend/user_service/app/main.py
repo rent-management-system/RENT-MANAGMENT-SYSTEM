@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import datetime
 import pytz
 
 from .routers import auth, users, admin
@@ -14,10 +13,11 @@ from .core.config import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Seed admin user
-    async with get_db() as db:
+    async for db in get_db():
         await seed_admin(db)
+        break  # only need first session
 
-    # Setup scheduler
+    # Setup scheduler in EAT timezone
     eat_timezone = pytz.timezone('Africa/Addis_Ababa')
     scheduler = AsyncIOScheduler(timezone=eat_timezone)
     scheduler.add_job(
@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown scheduler on app exit
+    # Shutdown scheduler
     scheduler.shutdown()
     print("Scheduler shut down.")
 
@@ -44,21 +44,21 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS Middleware
+# ====== CORS Middleware (allow all origins for testing) ======
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https?://.*\.?rental-user-management-frontend\.vercel\.app|http://localhost:5173",
+    allow_origins=["*"],  # <-- allows any domain and path
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Health check endpoint
+# ====== Health check endpoint ======
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "ok"}
 
-# Routers
+# ====== Include Routers ======
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
