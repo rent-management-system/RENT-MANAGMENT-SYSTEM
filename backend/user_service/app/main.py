@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import datetime, timedelta
+from datetime import datetime
 import pytz
 
 from .routers import auth, users, admin
@@ -13,34 +13,18 @@ from .core.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    async for db in get_db():
+    # Seed admin user
+    async with get_db() as db:
         await seed_admin(db)
-        break
 
-    scheduler = AsyncIOScheduler(timezone=pytz.utc)
-    # Schedule cleanup job daily at midnight EAT (UTC+3)
-    # Convert current UTC time to EAT, then set to midnight, then convert back to UTC for scheduling
+    # Setup scheduler
     eat_timezone = pytz.timezone('Africa/Addis_Ababa')
-    now_utc = datetime.now(pytz.utc)
-    now_eat = now_utc.astimezone(eat_timezone)
-    
-    # Set the desired cleanup hour in EAT (e.g., midnight is 0)
-    cleanup_hour_eat = settings.CLEANUP_SCHEDULE_HOUR
-    
-    # Calculate the next run time in EAT, then convert to UTC for APScheduler
-    next_run_eat = now_eat.replace(hour=cleanup_hour_eat, minute=0, second=0, microsecond=0)
-    if next_run_eat <= now_eat:
-        next_run_eat += timedelta(days=1) # Schedule for next day if time has passed today
-    
-    # Convert to UTC for APScheduler
-    next_run_utc = next_run_eat.astimezone(pytz.utc)
-
+    scheduler = AsyncIOScheduler(timezone=eat_timezone)
     scheduler.add_job(
         cleanup_expired_refresh_tokens,
         'cron',
-        hour=next_run_utc.hour,
-        minute=next_run_utc.minute,
+        hour=settings.CLEANUP_SCHEDULE_HOUR,  # e.g., 0 for midnight
+        minute=0,
         id='refresh_token_cleanup_job'
     )
     scheduler.start()
@@ -48,10 +32,11 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown
+    # Shutdown scheduler on app exit
     scheduler.shutdown()
     print("Scheduler shut down.")
 
+# Initialize FastAPI app
 app = FastAPI(
     title="User Management Microservice",
     description="Manages users, authentication, and authorization.",
@@ -59,21 +44,21 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # your Vite dev frontend
-        "https://rental-user-management-frontend.vercel.app/",  # production frontend (if same domain serves UI)
-    ],
+    allow_origin_regex=r"https?://.*\.?rental-user-management-frontend\.vercel\.app|http://localhost:5173",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Health check endpoint
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "ok"}
 
+# Routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
