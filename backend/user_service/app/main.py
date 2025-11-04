@@ -47,7 +47,7 @@ app = FastAPI(
 # ====== CORS Middleware (allow all origins for testing) ======
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # <-- allows any domain and path
+    allow_origins=["https://rental-user-management-frontend.vercel.app", "http://localhost:3000", "*"],  # Explicitly allow frontend origin, localhost, and other origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
