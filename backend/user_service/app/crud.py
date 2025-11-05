@@ -30,7 +30,7 @@ async def create_user(db: AsyncSession, user: UserCreate, password_changed: bool
         password=hashed_password,
         full_name=user.full_name,
         role=user.role,
-        phone_number=encrypted_phone_number,
+        phone_number=encrypted_phone_number.encode() if encrypted_phone_number else None,
         preferred_language=user.preferred_language,
         preferred_currency=user.preferred_currency,
         password_changed=password_changed # Set password_changed status
