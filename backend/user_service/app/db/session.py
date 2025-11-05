@@ -13,10 +13,12 @@ engine = create_async_engine(
 from typing import AsyncGenerator
 from contextlib import asynccontextmanager
 
-@asynccontextmanager
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async_session = sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False
     )
-    async with async_session() as session:
+    session = async_session()
+    try:
         yield session
+    finally:
+        await session.close()
