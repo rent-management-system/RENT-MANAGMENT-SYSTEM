@@ -18,13 +18,15 @@ def get_fernet():
         raise ValueError("AES_SECRET_KEY is not set in environment variables")
     return Fernet(settings.AES_SECRET_KEY.encode())
 
-def encrypt_data(data: str) -> bytes:
+def encrypt_data(data: str) -> str:
     f = get_fernet()
-    return f.encrypt(data.encode())
+    encrypted_bytes = f.encrypt(data.encode())
+    return base64.urlsafe_b64encode(encrypted_bytes).decode()
 
-def decrypt_data(encrypted_data: bytes) -> str:
+def decrypt_data(encrypted_data_str: str) -> str:
     f = get_fernet()
-    return f.decrypt(encrypted_data).decode()
+    encrypted_bytes = base64.urlsafe_b64decode(encrypted_data_str.encode())
+    return f.decrypt(encrypted_bytes).decode()
 
 
 def _truncate_password_to_safe_str(password: str) -> str:
