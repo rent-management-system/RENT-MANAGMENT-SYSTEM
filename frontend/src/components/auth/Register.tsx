@@ -60,11 +60,18 @@ const Register = () => {
         description: 'Your account has been created successfully!',
       });
       navigate('/login');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Registration error:', err);
-      toast.error('Registration Failed', {
-        description: error || 'Please check your information and try again.',
-      });
+      if (err.response && err.response.data && err.response.data.detail) {
+        console.error('Backend validation errors:', err.response.data.detail);
+        toast.error('Registration Failed', {
+          description: err.response.data.detail[0].msg || 'Please check your information and try again.',
+        });
+      } else {
+        toast.error('Registration Failed', {
+          description: error || 'Please check your information and try again.',
+        });
+      }
     }
   };
   const handleGoogleRegister = () => {
