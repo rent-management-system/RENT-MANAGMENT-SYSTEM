@@ -46,7 +46,7 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
     users = result.scalars().all()
     for user in users:
         if user.phone_number:
-            user.phone_number = decrypt_data(user.phone_number)
+            user.phone_number = decrypt_data(user.phone_number.decode('utf-8'))
     return users
 
 @async_retry()

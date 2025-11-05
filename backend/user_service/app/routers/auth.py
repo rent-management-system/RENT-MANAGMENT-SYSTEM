@@ -35,7 +35,7 @@ async def login(db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordReq
     # Decrypt phone number for JWT payload
     decrypted_phone_number = None
     if user.phone_number:
-        decrypted_phone_number = decrypt_data(user.phone_number)
+        decrypted_phone_number = decrypt_data(user.phone_number.decode('utf-8'))
 
     access_token_data = {
         "sub": str(user.id),
@@ -78,7 +78,7 @@ async def refresh(db: AsyncSession = Depends(get_db), refresh_token_obj: Refresh
     # Decrypt phone number for JWT payload
     decrypted_phone_number = None
     if user.phone_number:
-        decrypted_phone_number = decrypt_data(user.phone_number)
+        decrypted_phone_number = decrypt_data(user.phone_number.decode('utf-8'))
 
     access_token_data = {
         "sub": str(user.id),
@@ -114,7 +114,7 @@ async def change_password(db: AsyncSession = Depends(get_db), passwords: ChangeP
 async def verify_token(current_user: User = Depends(get_current_user)):
     decrypted_phone_number = None
     if current_user.phone_number:
-        decrypted_phone_number = decrypt_data(current_user.phone_number)
+        decrypted_phone_number = decrypt_data(current_user.phone_number.decode('utf-8'))
 
     return UserTokenData(
         user_id=current_user.id,
