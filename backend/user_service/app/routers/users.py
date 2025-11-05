@@ -5,7 +5,7 @@ from ..schemas.user import User, UserCreate, UserUpdate
 from ..db.session import get_db
 from ..crud import create_user, get_user_by_email
 from ..models.user import UserRole
-from ..core.security import encrypt_data
+from ..core.security import encrypt_data, decrypt_data
 
 router = APIRouter()
 
@@ -40,5 +40,5 @@ async def update_user_me(user_in: UserUpdate, db: AsyncSession = Depends(get_db)
     await db.refresh(current_user)
     # Decrypt phone number before returning
     if current_user.phone_number:
-        current_user.phone_number = decrypt_data(current_user.phone_number)
+        current_user.phone_number = decrypt_data(current_user.phone_number.decode('utf-8'))
     return current_user

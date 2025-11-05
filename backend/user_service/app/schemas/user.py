@@ -36,7 +36,8 @@ class User(UserInDBBase):
     @model_validator(mode='after')
     def decrypt_phone_number(self) -> Self:
         if isinstance(self.phone_number, bytes):
-            self.phone_number = decrypt_data(self.phone_number)
+            # Decode bytes to string before passing to decrypt_data
+            self.phone_number = decrypt_data(self.phone_number.decode('utf-8'))
         return self
 
 class UserInDB(UserInDBBase):
