@@ -13,8 +13,13 @@ from .core.config import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Seed admin user
-    async with get_db() as db:
+    db_generator = get_db()
+    db = await db_generator.__anext__() # Get the session from the async generator
+
+    try:
         await seed_admin(db)
+    finally:
+        await db_generator.aclose() # Close the session
         
 
     # Setup scheduler in EAT timezone
