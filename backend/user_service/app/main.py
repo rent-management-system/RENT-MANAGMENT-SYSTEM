@@ -54,6 +54,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://rental-user-management.vercel.app",
+        "https://rental-user-management-frontend-sigma.vercel.app",
         "http://localhost:3000",
         "http://localhost:5173", # Added for Vite development server
         "http://localhost:8000"  # Added for other common local development servers
