@@ -32,12 +32,16 @@ async def login(db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordReq
             detail="Please change your password on first login."
         )
 
-    # phone_number is no longer encrypted, so no decryption needed
+    # Ensure phone_number is a string for JWT payload
+    phone_number_str = user.phone_number
+    if isinstance(phone_number_str, bytes):
+        phone_number_str = phone_number_str.decode('utf-8')
+
     access_token_data = {
         "sub": str(user.id),
         "role": user.role.value,
         "email": user.email,
-        "phone_number": user.phone_number, # Use the plain phone number
+        "phone_number": phone_number_str, # Use the plain phone number
         "preferred_language": user.preferred_language.value
     }
     access_token = create_access_token(data=access_token_data)
@@ -71,12 +75,16 @@ async def refresh(db: AsyncSession = Depends(get_db), refresh_token_obj: Refresh
     # Delete the old refresh token from the database
     await delete_refresh_token(db, db_refresh_token.id)
 
-    # phone_number is no longer encrypted, so no decryption needed
+    # Ensure phone_number is a string for JWT payload
+    phone_number_str = user.phone_number
+    if isinstance(phone_number_str, bytes):
+        phone_number_str = phone_number_str.decode('utf-8')
+
     access_token_data = {
         "sub": str(user.id),
         "role": user.role.value,
         "email": user.email,
-        "phone_number": user.phone_number, # Use the plain phone number
+        "phone_number": phone_number_str, # Use the plain phone number
         "preferred_language": user.preferred_language.value
     }
     access_token = create_access_token(data=access_token_data)
@@ -104,11 +112,15 @@ async def change_password(db: AsyncSession = Depends(get_db), passwords: ChangeP
 
 @router.get("/verify", response_model=UserTokenData)
 async def verify_token(current_user: User = Depends(get_current_user)):
-    # phone_number is no longer encrypted, so no decryption needed
+    # Ensure phone_number is a string for the response model
+    phone_number_str = current_user.phone_number
+    if isinstance(phone_number_str, bytes):
+        phone_number_str = phone_number_str.decode('utf-8')
+
     return UserTokenData(
         user_id=current_user.id,
         role=current_user.role,
         email=current_user.email,
-        phone_number=current_user.phone_number, # Use plain phone number
+        phone_number=phone_number_str, # Use plain phone number
         preferred_language=current_user.preferred_language
     )

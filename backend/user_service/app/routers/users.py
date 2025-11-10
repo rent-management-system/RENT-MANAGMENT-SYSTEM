@@ -37,5 +37,9 @@ async def update_user_me(user_in: UserUpdate, db: AsyncSession = Depends(get_db)
     db.add(current_user)
     await db.commit()
     await db.refresh(current_user)
-    # No decryption needed for phone_number
+    # Ensure phone_number is a string before returning
+    phone_number_str = current_user.phone_number
+    if isinstance(phone_number_str, bytes):
+        phone_number_str = phone_number_str.decode('utf-8')
+    current_user.phone_number = phone_number_str
     return current_user
