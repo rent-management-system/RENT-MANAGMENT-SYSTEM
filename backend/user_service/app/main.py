@@ -57,7 +57,9 @@ app.add_middleware(
         "https://rental-user-management-frontend-sigma.vercel.app",
         "http://localhost:3000",
         "http://localhost:5173", # Added for Vite development server
-        "http://localhost:8000"  # Added for other common local development servers
+        "http://localhost:8000",  # Added for other common local development servers
+        "https://property-listing-service.onrender.com",
+        "https://rent-management-landlord-frontend.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
