@@ -3,30 +3,34 @@ from typing import Any, Union
 from jose import jwt
 from passlib.context import CryptContext
 from ..core.config import settings
-from cryptography.fernet import Fernet
-import base64
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Generate a key for AES-256 encryption
-def generate_aes_key():
-    return Fernet.generate_key().decode()
+# AES encryption functions are no longer used for phone numbers.
+# Keeping them commented out in case they are needed for other purposes in the future.
+# from cryptography.fernet import Fernet
+# import base64
 
-# Initialize Fernet with the AES_SECRET_KEY from settings
-def get_fernet():
-    if not settings.AES_SECRET_KEY:
-        raise ValueError("AES_SECRET_KEY is not set in environment variables")
-    return Fernet(settings.AES_SECRET_KEY.encode())
+# # Generate a key for AES-256 encryption
+# def generate_aes_key():
+#     return Fernet.generate_key().decode()
 
-def encrypt_data(data: str) -> str:
-    f = get_fernet()
-    encrypted_bytes = f.encrypt(data.encode())
-    return base64.urlsafe_b64encode(encrypted_bytes).decode()
+# # Initialize Fernet with the AES_SECRET_KEY from settings
+# def get_fernet():
+#     if not settings.AES_SECRET_KEY:
+#         raise ValueError("AES_SECRET_KEY is not set in environment variables")
+#     return Fernet(settings.AES_SECRET_KEY.encode())
 
-def decrypt_data(encrypted_data_str: str) -> str:
-    f = get_fernet()
-    encrypted_bytes = base64.urlsafe_b64decode(encrypted_data_str.encode())
-    return f.decrypt(encrypted_bytes).decode()
+# def encrypt_data(data: str) -> str:
+#     f = get_fernet()
+#     encrypted_bytes = f.encrypt(data.encode())
+#     return base64.urlsafe_b64encode(encrypted_bytes).decode()
+
+# def decrypt_data(encrypted_data_str: str) -> str:
+#     f = get_fernet()
+#     encrypted_bytes = base64.urlsafe_b64decode(encrypted_data_str.encode())
+#     return f.decrypt(encrypted_bytes).decode()
 
 
 def _truncate_password_to_safe_str(password: str) -> str:

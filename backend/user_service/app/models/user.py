@@ -38,7 +38,7 @@ class User(Base):
     password = Column(String, nullable=True) # Nullable for Google OAuth users
     full_name = Column(String, nullable=False)
     role = Column(SAEnum(UserRole), nullable=False, default=UserRole.TENANT)
-    phone_number = Column(LargeBinary, nullable=True) # Encrypted
+    phone_number = Column(String, nullable=True) # No longer encrypted
     preferred_language = Column(SAEnum(Language), default=Language.EN)
     preferred_currency = Column(SAEnum(Currency), default=Currency.ETB)
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..core.security import decode_token, decrypt_data
+from ..core.security import decode_token
 from ..db.session import get_db
 from ..models.user import User, UserRole
 from ..schemas.token import UserTokenData
@@ -24,12 +24,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     if user_id is None:
         raise credentials_exception
 
-    user = await get_user(db, user_id) # Use crud function to get user and decrypt phone_number
+    user = await get_user(db, user_id) # Use crud function to get user
     if user is None:
         raise credentials_exception
     
     # Ensure the user object returned has all necessary fields for downstream use
-    # The crud.get_user already decrypts phone_number
+    # phone_number is no longer encrypted/decrypted here
     return user
 
 def require_role(required_roles: List[UserRole]):

@@ -3,7 +3,7 @@ from sqlalchemy.future import select
 from sqlalchemy import delete
 from .models.user import User, RefreshToken
 from .schemas.user import UserCreate
-from .core.security import get_password_hash, encrypt_data, decrypt_data
+from .core.security import get_password_hash
 from .utils.retry import async_retry
 import uuid
 from datetime import datetime
@@ -24,13 +24,12 @@ async def get_user(db: AsyncSession, user_id: uuid.UUID) -> User | None:
 @async_retry()
 async def create_user(db: AsyncSession, user: UserCreate, password_changed: bool = True) -> User:
     hashed_password = get_password_hash(user.password)
-    encrypted_phone_number = encrypt_data(user.phone_number) if user.phone_number else None
     db_user = User(
         email=user.email,
         password=hashed_password,
         full_name=user.full_name,
         role=user.role,
-        phone_number=encrypted_phone_number.encode() if encrypted_phone_number else None,
+        phone_number=user.phone_number, # Store phone number directly
         preferred_language=user.preferred_language,
         preferred_currency=user.preferred_currency,
         password_changed=password_changed # Set password_changed status
@@ -44,9 +43,7 @@ async def create_user(db: AsyncSession, user: UserCreate, password_changed: bool
 async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
     result = await db.execute(select(User).offset(skip).limit(limit))
     users = result.scalars().all()
-    for user in users:
-        if user.phone_number:
-            user.phone_number = decrypt_data(user.phone_number.decode('utf-8'))
+    # No decryption needed for phone_number
     return users
 
 @async_retry()

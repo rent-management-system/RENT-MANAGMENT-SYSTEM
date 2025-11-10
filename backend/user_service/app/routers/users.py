@@ -5,7 +5,6 @@ from ..schemas.user import User, UserCreate, UserUpdate
 from ..db.session import get_db
 from ..crud import create_user, get_user_by_email
 from ..models.user import UserRole
-from ..core.security import encrypt_data, decrypt_data
 
 router = APIRouter()
 
@@ -29,7 +28,7 @@ async def update_user_me(user_in: UserUpdate, db: AsyncSession = Depends(get_db)
         current_user.full_name = user_in.full_name
     if user_in.phone_number:
         # The phone_number from user_in is already validated by Pydantic regex
-        current_user.phone_number = encrypt_data(user_in.phone_number)
+        current_user.phone_number = user_in.phone_number # Store phone number directly
     if user_in.preferred_language:
         current_user.preferred_language = user_in.preferred_language
     if user_in.preferred_currency:
@@ -38,7 +37,5 @@ async def update_user_me(user_in: UserUpdate, db: AsyncSession = Depends(get_db)
     db.add(current_user)
     await db.commit()
     await db.refresh(current_user)
-    # Decrypt phone number before returning
-    if current_user.phone_number:
-        current_user.phone_number = decrypt_data(current_user.phone_number.decode('utf-8'))
+    # No decryption needed for phone_number
     return current_user
