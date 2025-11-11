@@ -13,14 +13,10 @@ from .core.config import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Seed admin user
-    db_generator = get_db()
-    db = await db_generator.__anext__() # Get the session from the async generator
-
-    try:
+    print("Seeding admin user...")
+    async for db in get_db():
         await seed_admin(db)
-    finally:
-        await db_generator.aclose() # Close the session
-        
+    print("Admin user seeding complete.")
 
     # Setup scheduler in EAT timezone
     eat_timezone = pytz.timezone('Africa/Addis_Ababa')
@@ -49,18 +45,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# ====== CORS Middleware (allow all origins for testing) ======
+# ====== CORS Middleware ======
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://rental-user-management.vercel.app",
-        "https://rental-user-management-frontend-sigma.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:5173", # Added for Vite development server
-        "http://localhost:8000",  # Added for other common local development servers
-        "https://property-listing-service.onrender.com",
-        "https://rent-management-landlord-frontend.vercel.app"
-    ],
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.onrender\.com|http://localhost:.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

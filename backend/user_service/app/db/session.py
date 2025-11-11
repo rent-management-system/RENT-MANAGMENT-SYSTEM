@@ -1,4 +1,4 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 from ..core.config import settings
 
@@ -13,12 +13,10 @@ engine = create_async_engine(
 from typing import AsyncGenerator
 from contextlib import asynccontextmanager
 
+async_session = async_sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
+
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async_session = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
-    session = async_session()
-    try:
+    async with async_session() as session:
         yield session
-    finally:
-        await session.close()

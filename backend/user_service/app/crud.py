@@ -35,7 +35,7 @@ async def create_user(db: AsyncSession, user: UserCreate, password_changed: bool
         password_changed=password_changed # Set password_changed status
     )
     db.add(db_user)
-    await db.commit()
+    await db.flush()
     await db.refresh(db_user)
     
     return db_user
@@ -54,7 +54,7 @@ async def create_refresh_token_db(db: AsyncSession, user_id: uuid.UUID, token: s
         expires_at=expires_at
     )
     db.add(db_refresh_token)
-    await db.commit()
+    await db.flush()
     await db.refresh(db_refresh_token)
     return db_refresh_token
 
@@ -66,4 +66,4 @@ async def get_refresh_token_by_token(db: AsyncSession, token: str) -> RefreshTok
 @async_retry()
 async def delete_refresh_token(db: AsyncSession, refresh_token_id: uuid.UUID):
     await db.execute(delete(RefreshToken).where(RefreshToken.id == refresh_token_id))
-    await db.commit()
+    await db.flush()

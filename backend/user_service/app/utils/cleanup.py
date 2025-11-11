@@ -29,9 +29,7 @@ async def cleanup_expired_refresh_tokens():
                 delete(RefreshToken).where(RefreshToken.expires_at < expiration_threshold)
             )
             deleted_count = result.rowcount
-            await db.commit()
             print(f"Cleanup complete: Deleted {deleted_count} expired refresh tokens.")
         except Exception as e:
             print(f"Error during refresh token cleanup: {e}")
-            await db.rollback()
             raise # Re-raise to trigger retry
