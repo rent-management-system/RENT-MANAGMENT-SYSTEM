@@ -1,13 +1,13 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool
 from ..core.config import settings
 
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=True,
     future=True,
-    pool_size=30,  # Adjust as needed
-    max_overflow=50, # Adjust as needed
+    poolclass=NullPool
 )
 
 from typing import AsyncGenerator
