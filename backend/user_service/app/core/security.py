@@ -92,7 +92,8 @@ def get_password_hash(password: str) -> str:
     Hash the password after truncating to 72 bytes and decoding to str.
     """
     safe_pw = _truncate_password_to_safe_str(password)
-    return pwd_context.hash(safe_pw)
+    return pwd_context.hash(safe_pw[:72])
+
 
 
 def decode_token(token: str) -> Union[dict, None]:

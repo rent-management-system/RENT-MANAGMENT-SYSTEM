@@ -13,8 +13,9 @@ from ..crud import get_user_by_email, get_user, create_refresh_token_db, get_ref
 from ..models.user import UserRole
 from ..core.config import settings
 from datetime import datetime, timedelta
-from ...utils.send_email import send_reset_email
-from ...utils.supabase_client import supabase
+from app.utils.send_email import send_reset_email
+from app.utils.supabase_client import supabase
+
 
 router = APIRouter()
 
@@ -115,12 +116,15 @@ async def change_password(db: AsyncSession = Depends(get_db), passwords: ChangeP
 
     return {"message": "Password changed successfully"}
 
+from pydantic import BaseModel, EmailStr
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
 @router.post("/forgot-password")
-async def forgot_password(request: Request, db: AsyncSession = Depends(get_db)):
-    try:
-        data = await request.json()
-    except Exception:
-        return JSONResponse(status_code=400, content={"detail": "Invalid JSON"})
+async def forgot_password(request_data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    email = request_data.email
+
 
     email = data.get("email")
     if not email:
@@ -148,12 +152,15 @@ async def forgot_password(request: Request, db: AsyncSession = Depends(get_db)):
         print("❌ Failed to send email:", e)
         raise HTTPException(status_code=500, detail="Failed to send reset email")
 
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
+
 @router.post("/reset-password")
-async def reset_password(request: Request, db: AsyncSession = Depends(get_db)):
-    try:
-        data = await request.json()
-    except Exception:
-        return JSONResponse(status_code=400, content={"detail": "Invalid JSON"})
+async def reset_password(request_data: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    token = request_data.token
+    new_password = request_data.password
+
 
     token = data.get("token")
     new_password = data.get("password")
