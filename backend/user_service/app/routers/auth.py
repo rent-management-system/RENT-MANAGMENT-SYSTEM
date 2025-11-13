@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
+import secrets
+
 from ..dependencies.auth import get_current_user
 from ..schemas.token import Token, RefreshToken, UserTokenData
 from ..schemas.user import ChangePassword, User
@@ -10,6 +13,8 @@ from ..crud import get_user_by_email, get_user, create_refresh_token_db, get_ref
 from ..models.user import UserRole
 from ..core.config import settings
 from datetime import datetime, timedelta
+from ...utils.send_email import send_reset_email
+from ...utils.supabase_client import supabase
 
 router = APIRouter()
 
@@ -109,6 +114,77 @@ async def change_password(db: AsyncSession = Depends(get_db), passwords: ChangeP
     await db.refresh(current_user)
 
     return {"message": "Password changed successfully"}
+
+@router.post("/forgot-password")
+async def forgot_password(request: Request, db: AsyncSession = Depends(get_db)):
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"detail": "Invalid JSON"})
+
+    email = data.get("email")
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    user = await get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(hours=1)
+    reset_link = f"http://localhost:5174/reset-password?token={token}"
+
+    supabase.table("password_resets").insert({
+        "user_id": user.id,
+        "email": email,
+        "token": token,
+        "expires_at": expires_at.isoformat(),
+    }).execute()
+
+    try:
+        send_reset_email(email, reset_link)
+        return {"message": "Reset link sent successfully"}
+    except Exception as e:
+        print("❌ Failed to send email:", e)
+        raise HTTPException(status_code=500, detail="Failed to send reset email")
+
+@router.post("/reset-password")
+async def reset_password(request: Request, db: AsyncSession = Depends(get_db)):
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"detail": "Invalid JSON"})
+
+    token = data.get("token")
+    new_password = data.get("password")
+
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token and new password are required")
+
+    # Verify the token from the database
+    result = supabase.table("password_resets").select("*").eq("token", token).execute()
+    if not result.data:
+        raise HTTPException(status_code=400, detail="Invalid token")
+
+    reset_data = result.data[0]
+    expires_at = datetime.fromisoformat(reset_data["expires_at"])
+
+    if expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Expired token")
+
+    user = await get_user(db, reset_data["user_id"])
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.password = get_password_hash(new_password)
+    db.add(user)
+    await db.commit()
+
+    # Optionally, delete the token so it can't be reused
+    supabase.table("password_resets").delete().eq("token", token).execute()
+
+    return {"message": "Password has been reset successfully."}
+
 
 @router.get("/verify", response_model=UserTokenData)
 async def verify_token(current_user: User = Depends(get_current_user)):
