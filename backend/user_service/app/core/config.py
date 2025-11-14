@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # Database
@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     # Default Admin
     DEFAULT_ADMIN_EMAIL: str
     DEFAULT_ADMIN_PASSWORD: str
-    DEFAULT_ADMIN_EMAIL_2: str | None = None # Optional second admin email
-    DEFAULT_ADMIN_PASSWORD_2: str | None = None # Optional second admin password
+    DEFAULT_ADMIN_EMAIL_2: str | None = None
+    DEFAULT_ADMIN_PASSWORD_2: str | None = None
 
     # Google OAuth
     GOOGLE_CLIENT_ID: str
@@ -23,10 +23,19 @@ class Settings(BaseSettings):
     # AES Encryption
     AES_SECRET_KEY: str
 
-    # Cleanup Job
-    CLEANUP_SCHEDULE_HOUR: int = 0 # Midnight EAT (UTC+3)
+    # Supabase
+    SUPABASE_URL: str
+    SUPABASE_SERVICE_ROLE_KEY: str
 
-    class Config:
-        env_file = "/home/dagi/Desktop/flash files one documentes and desktop /Rent-managment-system/backend/user_service/.env"
+    # SMTP (Email)
+    SMTP_USER: str
+    SMTP_PASS: str
+    SMTP_HOST: str
+    SMTP_PORT: int
+
+    # Cleanup Job
+    CLEANUP_SCHEDULE_HOUR: int = 0
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()

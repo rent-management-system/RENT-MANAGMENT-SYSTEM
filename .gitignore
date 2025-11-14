@@ -10,7 +10,7 @@ __pycache__/
 *$py.class
 
 # Python virtual environment
-Bate/
+venv/
 
 # Node
 node_modules/
