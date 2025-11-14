@@ -3,7 +3,7 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from app.main import app
+from backend.user_service.app.main import app
 from app.db.base import Base
 from app.db.session import get_db
 from app.core.config import settings
@@ -37,3 +37,5 @@ async def client(test_db):
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
+
+    

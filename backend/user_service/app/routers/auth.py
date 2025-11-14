@@ -125,8 +125,6 @@ class ForgotPasswordRequest(BaseModel):
 async def forgot_password(request_data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
     email = request_data.email
 
-
-    email = data.get("email")
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
 
@@ -139,7 +137,7 @@ async def forgot_password(request_data: ForgotPasswordRequest, db: AsyncSession 
     reset_link = f"http://localhost:5174/reset-password?token={token}"
 
     supabase.table("password_resets").insert({
-        "user_id": user.id,
+        "user_id": str(user.id),
         "email": email,
         "token": token,
         "expires_at": expires_at.isoformat(),
@@ -160,10 +158,6 @@ class ResetPasswordRequest(BaseModel):
 async def reset_password(request_data: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
     token = request_data.token
     new_password = request_data.password
-
-
-    token = data.get("token")
-    new_password = data.get("password")
 
     if not token or not new_password:
         raise HTTPException(status_code=400, detail="Token and new password are required")

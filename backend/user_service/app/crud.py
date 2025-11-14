@@ -37,6 +37,7 @@ async def create_user(db: AsyncSession, user: UserCreate, password_changed: bool
     db.add(db_user)
     await db.flush()
     await db.refresh(db_user)
+    await db.commit()
     
     return db_user
 
