@@ -10,6 +10,7 @@ from ..db.session import get_db
 from ..crud import get_user_by_email, get_user, create_refresh_token_db, get_refresh_token_by_token, delete_refresh_token
 from ..models.user import UserRole
 from ..core.config import settings
+from fastapi.security import OAuth2PasswordRequestForm
 from app.utils.send_email import send_reset_email
 import jwt  # PyJWT
 
