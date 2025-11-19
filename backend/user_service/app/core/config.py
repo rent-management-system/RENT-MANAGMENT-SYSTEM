@@ -8,15 +8,14 @@ class Settings(BaseSettings):
     # JWT Settings
     JWT_SECRET: SecretStr                     # considered sensitive
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15     # consider 15 (you had 15 in env)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-    RESET_TOKEN_EXPIRE_MINUTES: int = 15      # added (used by reset flow)
+    RESET_TOKEN_EXPIRE_MINUTES: int = 15
 
-    # Backwards-compat alias (optional)
-    # Some code may reference SECRET_KEY; this property returns JWT_SECRET
-    # Use settings.secret_key to access plain str if needed: settings.secret_key
+    # Backwards-compat alias
     @property
     def secret_key(self) -> str:
+        """Return JWT secret as plain string for libraries like python-jose"""
         return self.JWT_SECRET.get_secret_value()
 
     # Default Admin
@@ -46,17 +45,22 @@ class Settings(BaseSettings):
     CLEANUP_SCHEDULE_HOUR: int = 0
 
     # allow reading .env
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
 
-    # validators
+    # Validators
     @validator("SUPABASE_URL", pre=True)
     def strip_newlines_from_supabase_url(cls, v: str) -> str:
-        # catch accidental pasted newlines in env
         if isinstance(v, str):
             v = v.strip()
-            # if user accidentally pasted multiple keys into SUPABASE_URL, raise helpful error
             if "\n" in v:
-                raise ValueError("SUPABASE_URL contains newline(s). Make sure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are separate environment variables.")
+                raise ValueError(
+                    "SUPABASE_URL contains newline(s). "
+                    "Make sure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are separate environment variables."
+                )
         return v
 
     @validator("SMTP_PORT", pre=True)
@@ -65,4 +69,5 @@ class Settings(BaseSettings):
             return int(v)
         return v
 
+# Initialize settings
 settings = Settings()
