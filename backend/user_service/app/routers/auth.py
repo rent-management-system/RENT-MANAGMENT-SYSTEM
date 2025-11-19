@@ -111,7 +111,9 @@ async def forgot_password(request_data: ForgotPasswordRequest, db: AsyncSession 
     reset_token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
     # FRONTEND RESET PAGE LINK
-    reset_link = f"http://localhost:5174/reset-password?token={reset_token}"
+    #reset_link = f"http://localhost:5174/reset-password?token={reset_token}"
+    reset_link = f"https://rental-user-management-frontend-sigma.vercel.app/reset-password?token={reset_token}"
+
 
     try:
         send_reset_email(user.email, reset_link)
