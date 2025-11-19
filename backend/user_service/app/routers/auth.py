@@ -25,9 +25,9 @@ router = APIRouter()
 
 # ---------------- CONFIG ---------------- #
 
-JWT_SECRET = settings.SECRET_KEY
-JWT_ALGORITHM = "HS256"
-RESET_TOKEN_EXPIRE_MINUTES = 60
+JWT_SECRET = settings.JWT_SECRET               # <--- FIXED HERE
+JWT_ALGORITHM = settings.JWT_ALGORITHM         # from env
+RESET_TOKEN_EXPIRE_MINUTES = settings.RESET_TOKEN_EXPIRE_MINUTES
 
 
 # ---------------- Login ---------------- #
