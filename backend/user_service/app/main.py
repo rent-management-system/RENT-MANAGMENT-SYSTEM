@@ -7,6 +7,12 @@ from datetime import datetime, timedelta
 import pytz
 import secrets
 from supabase import create_client
+from dotenv import load_dotenv
+load_dotenv()
+import os
+print("DEBUG SMTP_USER:", os.getenv("SMTP_USER"))
+print("DEBUG SMTP_PASS:", os.getenv("SMTP_PASS"))
+
 
 # Local imports
 from app.routers import auth, users, admin
