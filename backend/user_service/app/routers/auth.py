@@ -31,13 +31,6 @@ async def login(db: AsyncSession = Depends(get_db), form_data: OAuth2PasswordReq
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
 
-    # Check if password needs to be changed for pre-seeded admins
-    if user.role == UserRole.ADMIN and not user.password_changed:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Please change your password on first login."
-        )
-
     # Ensure phone_number is a string for JWT payload
     phone_number_str = user.phone_number
     if isinstance(phone_number_str, bytes):
