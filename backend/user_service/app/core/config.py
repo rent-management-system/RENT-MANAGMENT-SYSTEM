@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     SMTP_PASS: SecretStr
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
+    FRONTEND_URL: str
 
     # Cleanup Job
     CLEANUP_SCHEDULE_HOUR: int = 0
