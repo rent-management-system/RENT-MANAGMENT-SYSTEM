@@ -213,7 +213,7 @@ async def forgot_password(
     expires_at = datetime.utcnow() + timedelta(hours=1)
 
     reset_link = (
-        f"hhttps://rental-user-management-frontend-sigma.vercel.app/reset-password?token={token}"
+        f"https://rental-user-management-frontend-sigma.vercel.app/reset-password?token={token}"
     )
 
     supabase.table("password_resets").insert({
