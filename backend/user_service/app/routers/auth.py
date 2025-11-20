@@ -71,7 +71,7 @@ async def login(
         "role": user.role.value,
         "email": user.email,
         "phone_number": phone_number_str,
-        "preferred_language": user.preferred_language.value
+        "preferred_language": user.preferred_language.value if user.preferred_language else None
     }
 
     access_token = create_access_token(data=access_token_data)
@@ -156,7 +156,7 @@ async def refresh(
             "role": user.role.value,
             "email": user.email,
             "phone_number": phone_number_str,
-            "preferred_language": user.preferred_language.value
+            "preferred_language": user.preferred_language.value if user.preferred_language else None
         }
     )
 
