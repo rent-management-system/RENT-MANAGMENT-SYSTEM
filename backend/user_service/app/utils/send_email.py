@@ -9,7 +9,7 @@ load_dotenv()
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASS = os.getenv("SMTP_PASS")
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 465))
+SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5174")
 
 def send_reset_email(to_email: str, token: str):
@@ -31,6 +31,11 @@ def send_reset_email(to_email: str, token: str):
     """
     msg.attach(MIMEText(html, "html"))
 
-    with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-        server.login(SMTP_USER, SMTP_PASS)
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            server.starttls()  # Upgrade connection to secure
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+        raise

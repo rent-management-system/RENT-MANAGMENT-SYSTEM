@@ -25,7 +25,7 @@ router = APIRouter()
 
 # ---------------- CONFIG ---------------- #
 
-JWT_SECRET = settings.JWT_SECRET               # <--- FIXED HERE
+JWT_SECRET = settings.secret_key
 JWT_ALGORITHM = settings.JWT_ALGORITHM         # from env
 RESET_TOKEN_EXPIRE_MINUTES = settings.RESET_TOKEN_EXPIRE_MINUTES
 
