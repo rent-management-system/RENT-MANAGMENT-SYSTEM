@@ -16,4 +16,4 @@ class UserTokenData(BaseModel):
     role: UserRole
     email: EmailStr
     phone_number: Optional[str] = None
-    preferred_language: Language
+    preferred_language: Optional[Language] = None
