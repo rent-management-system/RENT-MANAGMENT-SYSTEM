@@ -3,21 +3,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import datetime, timedelta
 import pytz
 import secrets
+from datetime import datetime, timedelta
 from supabase import create_client
 from dotenv import load_dotenv
+
+# Load environment variables
 load_dotenv()
 import os
 print("DEBUG SMTP_USER:", os.getenv("SMTP_USER"))
 print("DEBUG SMTP_PASS:", os.getenv("SMTP_PASS"))
 
-
 # Local imports
 from app.routers import auth, users, admin
 from app.db.seed import seed_admin
-from app.db.session import get_db
+from app.db.session import async_session  # Correctly import the session factory
 from app.utils.cleanup import cleanup_expired_refresh_tokens
 from app.utils.send_email import send_reset_email
 from app.core.config import settings
@@ -29,11 +30,17 @@ supabase = create_client(url, key)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Asynchronous context manager for application lifespan events.
+    Handles startup and shutdown logic, including database seeding and scheduler.
+    """
     print("Seeding admin user...")
-    async for db in get_db():
+    # Use 'async with' on the session factory to ensure the session is properly managed
+    async with async_session() as db:
         await seed_admin(db)
     print("Admin user seeding complete.")
 
+    # Scheduler setup
     eat_timezone = pytz.timezone('Africa/Addis_Ababa')
     scheduler = AsyncIOScheduler(timezone=eat_timezone)
     scheduler.add_job(
@@ -45,7 +52,10 @@ async def lifespan(app: FastAPI):
     )
     scheduler.start()
     print("Scheduler started for refresh token cleanup.")
-    yield
+
+    yield  # The application runs here
+
+    # Shutdown logic
     scheduler.shutdown()
     print("Scheduler shut down.")
 
